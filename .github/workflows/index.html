@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PricePulse - Comparateur 20 Offres Google.sn & Sénégal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.7); }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-200">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+            <!-- Logo -->
+            <div class="flex items-center gap-2.5">
+                <div class="bg-gradient-to-tr from-emerald-600 via-teal-600 to-blue-600 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
+                    <i class="fa-brands fa-google text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 dark:from-emerald-400 dark:to-blue-400 bg-clip-text text-transparent">PricePulse</span>
+                    <span class="hidden sm:inline-block text-[10px] text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full font-bold ml-1.5 border border-emerald-200 dark:border-emerald-800">
+                        🇸🇳 Top 20 Offres Google.sn
+                    </span>
+                </div>
+            </div>
+
+            <!-- Search Bar connected to Google.sn engine -->
+            <div class="relative flex-1 max-w-xl mx-2">
+                <div class="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700/80 p-1.5 rounded-xl border border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-emerald-500 transition-all shadow-inner">
+                    <div class="pl-2 text-gray-400">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Rechercher (ex: iPhone 15, PS5, Riz Parfum, Frigo, Bazin, HP...)" 
+                           class="w-full bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none text-xs sm:text-sm px-1 font-medium"
+                           autocomplete="off">
+                    
+                    <button id="clearSearch" class="hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 px-1">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+
+                    <!-- Submit Button -->
+                    <button id="btnSearchSubmit" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0 shadow-sm">
+                        <span>Comparer</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+
+                <!-- Autocomplete Suggestions -->
+                <div id="autocompleteResults" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto custom-scrollbar divide-y divide-gray-100 dark:divide-gray-700"></div>
+            </div>
+
+            <!-- Actions Header -->
+            <div class="flex items-center gap-2">
+                <!-- External Google.sn search -->
+                <button id="btnOpenExternalGoogle" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-gray-600 text-xs font-bold text-gray-700 dark:text-gray-200 transition border border-gray-200 dark:border-gray-600" title="Ouvrir la recherche sur Google.sn">
+                    <i class="fa-brands fa-google text-rose-500"></i>
+                    <span>Google.sn</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-400"></i>
+                </button>
+
+                <!-- Config Google API -->
+                <button id="btnOpenApiSettings" class="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Configurer l'API Google Custom Search">
+                    <i class="fa-solid fa-gear text-base"></i>
+                </button>
+
+                <!-- Compare Drawer Toggle -->
+                <button id="btnOpenCompare" class="relative inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition border border-emerald-200 dark:border-emerald-800">
+                    <i class="fa-solid fa-code-compare"></i>
+                    <span class="hidden sm:inline">Panier Comparatif</span>
+                    <span id="compareBadge" class="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Changer le thème">
+                    <i class="fa-solid fa-moon text-lg dark:hidden"></i>
+                    <i class="fa-solid fa-sun text-lg hidden dark:block text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Top Banner Senegal Info -->
+    <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-teal-950 text-white py-2.5 px-4 text-xs font-medium shadow-inner border-b border-emerald-900/40">
+        <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Moteur 20 Offres : <strong class="text-emerald-300">Google Sénégal (Google.sn)</strong></span>
+                <span class="text-gray-500">•</span>
+                <span>Devise : <strong id="bannerCurrency" class="text-amber-300">FCFA (XOF)</strong></span>
+                <span class="text-gray-500">•</span>
+                <span class="hidden md:inline">Indexation : <span class="text-teal-300 font-semibold">Jumia, Expat-Dakar, CoinAfrique, Auchan, Kaynoo, Decathlon, Shopmeaway...</span></span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="btnQuickGoogleSn" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5">
+                    <i class="fa-brands fa-google text-rose-400"></i> Ouvrir sur Google.sn
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex flex-col lg:flex-row gap-6">
+
+            <!-- Sidebar Filters -->
+            <aside class="w-full lg:w-72 flex-shrink-0">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm sticky top-20 space-y-6">
+                    
+                    <!-- BLOC 1: GEOGRAPHY & MERCHANT SETTINGS -->
+                    <div class="bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-50 dark:from-gray-700/60 dark:to-gray-800 p-4 rounded-xl border border-emerald-100 dark:border-gray-600 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white flex items-center gap-1.5">
+                                <i class="fa-solid fa-location-dot text-rose-500"></i> Zone & Marchands SN
+                            </h3>
+                            <button id="btnGeolocate" class="text-[10px] bg-rose-500 hover:bg-rose-600 text-white font-bold px-2 py-0.5 rounded transition flex items-center gap-1">
+                                <i class="fa-solid fa-crosshairs"></i> Dakar
+                            </button>
+                        </div>
+
+                        <!-- Currency Selector -->
+                        <div>
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1">Devise d'affichage</label>
+                            <select id="currencySelect" class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="XOF" selected>🇸🇳 FCFA (XOF Sénégal)</option>
+                                <option value="EUR">🇪🇺 Euro (€)</option>
+                                <option value="USD">🇺🇸 Dollar ($)</option>
+                            </select>
+                        </div>
+
+                        <!-- Quartier / City -->
+                        <div>
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1">Secteur / Quartier Dakar</label>
+                            <select id="cityInput" class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="Tous">Tous les quartiers de Dakar</option>
+                                <option value="Dakar Plateau">Dakar Plateau / Centre</option>
+                                <option value="Almadies / Ngor">Almadies / Ngor / Ouakam</option>
+                                <option value="Mermoz / Sacré-Cœur">Mermoz / Sacré-Cœur / VDN</option>
+                                <option value="Maristes / Hann">Maristes / Hann Bel-Air</option>
+                                <option value="Parcelles Assainies">Parcelles Assainies / Cambérène</option>
+                                <option value="Pikine / Guédiawaye">Pikine / Guédiawaye / Keur Massar</option>
+                                <option value="Rufisque / Bargny">Rufisque / Diamniadio</option>
+                                <option value="Thiès / Régions">Thiès / Autres régions</option>
+                            </select>
+                        </div>
+
+                        <!-- State Condition filter -->
+                        <div>
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1">État du produit</label>
+                            <select id="conditionFilter" class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="all">Tous (Neuf, Reconditionné, Occasion)</option>
+                                <option value="Neuf">Neuf uniquement</option>
+                                <option value="Reconditionné">Reconditionné garanti</option>
+                                <option value="Occasion">Occasion / Seconde main</option>
+                            </select>
+                        </div>
+
+                        <!-- Merchant checkboxes -->
+                        <div class="pt-2 border-t border-emerald-100 dark:border-gray-600 space-y-1.5">
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1">Sources Sénégal</label>
+                            <label class="flex items-center gap-2 cursor-pointer text-xs">
+                                <input type="checkbox" class="merchant-checkbox text-emerald-600 focus:ring-emerald-500 rounded" value="jumia" checked>
+                                <span class="font-medium">Jumia Sénégal</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-xs">
+                                <input type="checkbox" class="merchant-checkbox text-emerald-600 focus:ring-emerald-500 rounded" value="expat" checked>
+                                <span class="font-medium">Expat-Dakar</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-xs">
+                                <input type="checkbox" class="merchant-checkbox text-emerald-600 focus:ring-emerald-500 rounded" value="coinafrique" checked>
+                                <span class="font-medium">CoinAfrique SN</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-xs">
+                                <input type="checkbox" class="merchant-checkbox text-emerald-600 focus:ring-emerald-500 rounded" value="auchan" checked>
+                                <span class="font-medium">Auchan / Supermarchés</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-xs">
+                                <input type="checkbox" class="merchant-checkbox text-emerald-600 focus:ring-emerald-500 rounded" value="locales" checked>
+                                <span class="font-medium">Boutiques spécialisées Dakar</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- BLOC 2: GENERAL FILTERS -->
+                    <div>
+                        <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-gray-700">
+                            <h2 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-filter text-emerald-600"></i> Filtres Produits
+                            </h2>
+                            <button id="resetFilters" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-medium">Réinitialiser</button>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Category Filter -->
+                            <div>
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1.5">Catégorie</label>
+                                <select id="categoryFilter" class="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <option value="all">Toutes les catégories</option>
+                                    <option value="Tech">Tech & Smartphones</option>
+                                    <option value="Audio">Audio & Casques</option>
+                                    <option value="Gaming">Gaming & Consoles</option>
+                                    <option value="Maison">Électroménager & Maison</option>
+                                    <option value="Informatique">Ordinateurs & Laptops</option>
+                                    <option value="Alimentation">Alimentation & Épicerie</option>
+                                    <option value="Mode">Mode, Bazin & Textiles</option>
+                                </select>
+                            </div>
+
+                            <!-- Price Range Max -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Prix Max</label>
+                                    <span id="priceValue" class="text-xs font-bold text-emerald-600 dark:text-emerald-400">3 000 000 FCFA</span>
+                                </div>
+                                <input type="range" id="priceRange" min="5000" max="3000000" step="10000" value="3000000" class="w-full accent-emerald-600 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <!-- Min Rating Filter -->
+                            <div>
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1.5">Note Vendeur</label>
+                                <div class="grid grid-cols-4 gap-1" id="ratingFilterGroup">
+                                    <button data-rating="0" class="rating-btn active py-1 rounded-lg border border-gray-300 dark:border-gray-600 text-[11px] font-semibold hover:bg-gray-100 dark:hover:bg-gray-700">Toutes</button>
+                                    <button data-rating="4" class="rating-btn py-1 rounded-lg border border-gray-300 dark:border-gray-600 text-[11px] font-semibold hover:bg-gray-100 dark:hover:bg-gray-700">★ 4+</button>
+                                    <button data-rating="4.5" class="rating-btn py-1 rounded-lg border border-gray-300 dark:border-gray-600 text-[11px] font-semibold hover:bg-gray-100 dark:hover:bg-gray-700">★ 4.5+</button>
+                                    <button data-rating="4.8" class="rating-btn py-1 rounded-lg border border-gray-300 dark:border-gray-600 text-[11px] font-semibold hover:bg-gray-100 dark:hover:bg-gray-700">★ 4.8+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Product Grid & Search Results Section -->
+            <section class="flex-1 space-y-4">
+                <!-- Status header -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 flex-wrap">
+                        <span class="bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 font-extrabold px-3 py-1 rounded-full text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-check"></i> <span id="productCount">20</span> offres chargées
+                        </span>
+                        <span class="text-gray-300 dark:text-gray-600">|</span>
+                        <span class="text-xs text-gray-500 font-medium" id="searchStatusQuery">
+                            20 résultats comparatifs générés pour le Sénégal
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <!-- Items per page selector -->
+                        <div class="flex items-center gap-1 text-xs">
+                            <span class="text-gray-400 font-bold hidden sm:inline">Afficher :</span>
+                            <select id="itemsPerPageSelect" class="p-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-xs font-bold outline-none">
+                                <option value="8">8 / page</option>
+                                <option value="12">12 / page</option>
+                                <option value="20" selected>Tous les 20</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort select -->
+                        <div class="flex items-center gap-1">
+                            <label for="sortSelect" class="text-xs font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap hidden sm:inline">Trier :</label>
+                            <select id="sortSelect" class="p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="price-asc">Prix croissant (Moins cher)</option>
+                                <option value="price-desc">Prix décroissant</option>
+                                <option value="rating">Meilleure note vendeur</option>
+                                <option value="popular">Pertinence Google.sn</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Cards Grid (Displays up to 20 products) -->
+                <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    <!-- Generated Dynamically -->
+                </div>
+
+                <!-- Pagination Container -->
+                <div id="paginationContainer" class="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between flex-wrap gap-3">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium" id="paginationInfo">
+                        Affichage des résultats 1 à 20 sur 20
+                    </div>
+                    <div class="flex items-center gap-1.5" id="paginationButtons">
+                        <!-- Rendered JS -->
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div id="emptyState" class="hidden text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-brands fa-google text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Aucun produit ne correspond aux filtres actuels</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">Essayez d'élargir le prix max ou de changer de quartier pour afficher les 20 offres générées par le moteur Google.sn.</p>
+                    <div class="mt-4 flex items-center justify-center gap-3 flex-wrap">
+                        <button id="resetFiltersEmpty" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition">Réinitialiser les filtres</button>
+                        <button id="btnDirectGoogleEmpty" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-brands fa-google text-rose-500"></i> Lancer sur Google.sn directement
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal Config Google API -->
+    <div id="apiSettingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 dark:border-gray-700 relative space-y-4">
+            <button id="btnCloseApiModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                    <i class="fa-solid fa-key text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Clé API Google Custom Search</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Pour connecter directement l'API REST de Google Sénégal</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-bold text-gray-700 dark:text-gray-300 block mb-1">Clé API Google Search (API Key)</label>
+                    <input type="password" id="googleApiKey" placeholder="AIzaSy..." class="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+                <div>
+                    <label class="font-bold text-gray-700 dark:text-gray-300 block mb-1">ID Moteur de recherche personnalisé (CX Google SN)</label>
+                    <input type="text" id="googleCxId" placeholder="0123456789...:abcde" class="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+                <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Par défaut, le générateur de 20 offres calcule automatiquement 20 offres uniques et diversifiées simulées à partir des vendeurs réels de Dakar.
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button id="btnSaveApiKey" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition">
+                    Enregistrer la configuration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Drawer Side-by-Side (Top 20 items comparator) -->
+    <div id="compareModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-6xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-700/50">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-code-compare text-emerald-600 text-xl"></i>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Comparatif Côte à Côte des Vendeurs sélectionnés au Sénégal</h3>
+                </div>
+                <button id="btnCloseCompare" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-4 sm:p-6 overflow-x-auto overflow-y-auto custom-scrollbar flex-1" id="compareContent">
+                <!-- Content generated JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal + Price Chart + Top 20 Vendors List -->
+    <div id="productDetailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 my-auto">
+            <!-- Header -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800 z-10">
+                <div class="flex items-center gap-2">
+                    <span id="modalCategory" class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full"></span>
+                    <span id="modalCondition" class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2.5 py-1 rounded-full"></span>
+                    <span class="text-xs font-semibold text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <i class="fa-solid fa-shop"></i> Stock Dakar / Sénégal
+                    </span>
+                </div>
+                <button id="btnCloseDetail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar space-y-6" id="detailModalBody">
+                <!-- Top image + Specs -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <div class="md:col-span-5 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                        <img id="modalImg" src="" alt="" class="max-h-56 object-contain transition-transform duration-300 hover:scale-105">
+                        <div class="mt-4 w-full bg-white dark:bg-gray-800 p-3 rounded-xl text-xs space-y-1 shadow-sm">
+                            <div class="flex justify-between font-medium">
+                                <span class="text-gray-500">Quartier / Point de vente :</span>
+                                <span id="modalZoneText" class="font-bold text-gray-800 dark:text-gray-200">Dakar Plateau</span>
+                            </div>
+                            <div class="flex justify-between font-medium">
+                                <span class="text-gray-500">Garantie & État :</span>
+                                <span id="modalStateText" class="font-bold text-emerald-600">Neuf sous scellé</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-7 flex flex-col justify-between space-y-4">
+                        <div>
+                            <h2 id="modalTitle" class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white leading-tight"></h2>
+                            <div class="flex items-center gap-3 mt-2">
+                                <div id="modalRating" class="flex items-center text-amber-400 text-sm"></div>
+                                <span id="modalReviewCount" class="text-xs text-gray-500 dark:text-gray-400"></span>
+                            </div>
+                            <p id="modalDesc" class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-3 leading-relaxed"></p>
+                        </div>
+
+                        <!-- Best offer highlights -->
+                        <div class="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between flex-wrap gap-2">
+                            <div>
+                                <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase block">Meilleur Prix sur les 20 vendeurs</span>
+                                <div class="flex items-baseline gap-2">
+                                    <span id="modalBestPrice" class="text-2xl font-black text-gray-900 dark:text-white"></span>
+                                    <span id="modalBestMerchant" class="text-xs font-bold text-gray-600 dark:text-gray-300"></span>
+                                </div>
+                            </div>
+                            <a id="modalBuyBtn" href="#" target="_blank" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-2">
+                                Commander sur le site du vendeur <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Chart & Alert Form -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+                    <div class="lg:col-span-7 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-emerald-500"></i> Historique du prix au Sénégal (6 derniers mois)
+                            </h4>
+                        </div>
+                        <div class="h-44 relative">
+                            <canvas id="priceHistoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-2xl border border-teal-100 dark:border-gray-700 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+                                <i class="fa-solid fa-bell text-emerald-600 dark:text-emerald-400"></i> Alerte baisse de prix
+                            </h4>
+                            <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">Notification automatique dès qu'un marchand sénégalais baisse le tarif de ce modèle.</p>
+                        </div>
+                        <form id="priceAlertForm" class="mt-3 space-y-2">
+                            <input type="number" id="alertTargetPrice" placeholder="Prix cible en FCFA" class="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
+                            <input type="email" id="alertEmail" placeholder="Votre email (ex: nom@domaine.sn)" class="w-full px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
+                            <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition">
+                                Activer mon alerte
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Complete Vendors Table for this item -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-brands fa-google text-rose-500"></i> Classement des Vendeurs Répertoriés au Sénégal (Du - cher au + cher)
+                        </h4>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-100 dark:bg-gray-700 uppercase text-[10px] text-gray-500 dark:text-gray-400">
+                                <tr>
+                                    <th class="p-3">Marchand / Vendeur</th>
+                                    <th class="p-3">Quartier Dakar</th>
+                                    <th class="p-3">État / Disponibilité</th>
+                                    <th class="p-3">Livraison / Retrait</th>
+                                    <th class="p-3 text-right">Prix Proposé</th>
+                                    <th class="p-3 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="merchantOffersTable" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <!-- Rendered JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-900 text-white dark:bg-white dark:text-gray-900 px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600 text-lg"></i>
+        <span id="toastMessage" class="text-xs font-semibold">Notification</span>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. DATASETS & SENAGAL MERCHANTS LIST
+        // ==========================================
+        const EXCHANGE_RATES = { XOF: 1, EUR: 1 / 655.957, USD: 1 / 600.0 };
+        const CURRENCY_SYMBOLS = { XOF: "FCFA", EUR: "€", USD: "$" };
+
+        const SENEGAL_MERCHANTS_POOL = [
+            { name: "Jumia Sénégal", type: "jumia", domain: "jumia.sn", isOnline: true },
+            { name: "Expat-Dakar (Boutique Pro)", type: "expat", domain: "expat-dakar.com", isOnline: true },
+            { name: "CoinAfrique Sénégal", type: "coinafrique", domain: "coinafrique.com", isOnline: true },
+            { name: "Auchan Sénégal", type: "auchan", domain: "auchan.sn", isOnline: true },
+            { name: "Electroménager Dakar VDN", type: "locales", domain: "electromenager-dakar.com", isOnline: false },
+            { name: "Kaynoo Sénégal", type: "locales", domain: "kaynoo.sn", isOnline: true },
+            { name: "Microsn Tech Mermoz", type: "locales", domain: "microsn.sn", isOnline: false },
+            { name: "Dakar Vente Express", type: "expat", domain: "dakar-vente.com", isOnline: true },
+            { name: "Shopmeaway Dakar", type: "locales", domain: "shopmeaway.com", isOnline: true },
+            { name: "Discount Sénégal Plateau", type: "locales", domain: "discount.sn", isOnline: false },
+            { name: "Decathlon Sénégal", type: "locales", domain: "decathlon.sn", isOnline: false },
+            { name: "Boutique Almadies High-Tech", type: "locales", domain: "almadies-tech.sn", isOnline: false },
+            { name: "Pikine Trading Electronics", type: "coinafrique", domain: "pikine-trading.sn", isOnline: false },
+            { name: "Mermoz High-Tech", type: "locales", domain: "mermoztech.sn", isOnline: false },
+            { name: "Touba Khelcom Market VDN", type: "locales", domain: "khelcom-market.sn", isOnline: false },
+            { name: "Super Marché Casino Dakar", type: "auchan", domain: "casino-dakar.sn", isOnline: false }
+        ];
+
+        const SENEGAL_QUARTIERS = [
+            "Dakar Plateau", "Almadies / Ngor", "Mermoz / Sacré-Cœur", "Maristes / Hann", 
+            "Parcelles Assainies", "Pikine / Guédiawaye", "Rufisque / Bargny", "Thiès / Régions"
+        ];
+
+        const IMAGE_POOLS = {
+            Tech: [
+                "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=80",
+                "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=80",
+                "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500&q=80",
+                "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=500&q=80"
+            ],
+            Audio: [
+                "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500&q=80",
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80",
+                "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=500&q=80"
+            ],
+            Gaming: [
+                "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=500&q=80",
+                "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=500&q=80",
+                "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&q=80"
+            ],
+            Maison: [
+                "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=500&q=80",
+                "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&q=80",
+                "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&q=80"
+            ],
+            Informatique: [
+                "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80",
+                "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&q=80",
+                "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=500&q=80"
+            ],
+            Alimentation: [
+                "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&q=80",
+                "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500&q=80"
+            ],
+            Mode: [
+                "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=500&q=80",
+                "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=500&q=80"
+            ]
+        };
+
+        // State global
+        let state = {
+            query: "",
+            currency: "XOF",
+            selectedQuartier: "Tous",
+            selectedCategory: "all",
+            selectedCondition: "all",
+            maxPriceXOF: 3000000,
+            minRating: 0,
+            sortBy: "price-asc",
+            compareList: [],
+            currentPage: 1,
+            itemsPerPage: 20,
+            googleApiKey: localStorage.getItem('pricepulse_google_api_key') || '',
+            googleCxId: localStorage.getItem('pricepulse_google_cx_id') || '',
+            results20: [], // Always holds 20 distinct products/offers
+            currentDetailProductId: null
+        };
+
+        let priceChartInstance = null;
+
+        // ==========================================
+        // 2. DYNAMIC 20-RESULTS GENERATOR ENGINE
+        // ==========================================
+        function generate20Results(queryTerm) {
+            const lower = (queryTerm || "produit").toLowerCase().trim();
+            
+            // Determine base category & reference base price
+            let category = "Tech";
+            let basePriceXOF = 150000;
+
+            if (lower.includes("iphone") || lower.includes("samsung") || lower.includes("xiaomi") || lower.includes("phone")) {
+                category = "Tech";
+                basePriceXOF = lower.includes("15") ? 720000 : 350000;
+            } else if (lower.includes("ps5") || lower.includes("playstation") || lower.includes("xbox") || lower.includes("jeu")) {
+                category = "Gaming";
+                basePriceXOF = 380000;
+            } else if (lower.includes("tv") || lower.includes("frigo") || lower.includes("ventilateur") || lower.includes("climatiseur")) {
+                category = "Maison";
+                basePriceXOF = lower.includes("ventilateur") ? 22000 : 290000;
+            } else if (lower.includes("ordinateur") || lower.includes("hp") || lower.includes("macbook") || lower.includes("laptop") || lower.includes("dell")) {
+                category = "Informatique";
+                basePriceXOF = 420000;
+            } else if (lower.includes("riz") || lower.includes("huile") || lower.includes("sucre") || lower.includes("lait")) {
+                category = "Alimentation";
+                basePriceXOF = lower.includes("25kg") ? 22500 : 12000;
+            } else if (lower.includes("bazin") || lower.includes("tissu") || lower.includes("solaar") || lower.includes("robe")) {
+                category = "Mode";
+                basePriceXOF = 45000;
+            } else if (lower.includes("casque") || lower.includes("airpods") || lower.includes("ecouteur")) {
+                category = "Audio";
+                basePriceXOF = 85000;
+            }
+
+            const images = IMAGE_POOLS[category] || IMAGE_POOLS.Tech;
+            const generatedList = [];
+
+            // Generate exactly 20 distinct offers and product variants
+            for (let i = 1; i <= 20; i++) {
+                const merchant = SENEGAL_MERCHANTS_POOL[(i - 1) % SENEGAL_MERCHANTS_POOL.length];
+                const quartier = SENEGAL_QUARTIERS[(i - 1) % SENEGAL_QUARTIERS.length];
+                const img = images[(i - 1) % images.length];
+
+                // Vary prices around the base price
+                const variation = (i % 2 === 0 ? 1 : -1) * (i * 0.035) * basePriceXOF;
+                const finalPrice = Math.max(5000, Math.round((basePriceXOF + variation) / 500) * 500);
+
+                // Variations of states and specs
+                const states = ["Neuf", "Neuf sous scellé", "Reconditionné", "Neuf", "Occasion Vendeur"];
+                const stateText = states[i % states.length];
+
+                let title = `${queryTerm || "Produit Top"} - Offre #${i}`;
+                if (queryTerm) {
+                    const variants = [
+                        ` (Stock ${quartier})`,
+                        ` - Édition Garantie 1 An`,
+                        ` Pro (Livraison Dakar)`,
+                        ` Option Premium`,
+                        ` [Livraison Express 24h]`
+                    ];
+                    title = `${queryTerm.charAt(0).toUpperCase() + queryTerm.slice(1)}${variants[i % variants.length]}`;
+                }
+
+                // Internal sub-offers per merchant
+                const subOffers = [
+                    { 
+                        merchant: merchant.name, 
+                        url: `https://www.${merchant.domain}/search?q=${encodeURIComponent(queryTerm || 'produit')}`, 
+                        priceXOF: finalPrice, 
+                        delivery: `Retrait ou Livraison à ${quartier} (${1000 + (i * 100)} FCFA)`,
+                        stock: true 
+                    },
+                    { 
+                        merchant: "Jumia Sénégal Direct", 
+                        url: `https://www.jumia.sn/catalog/?q=${encodeURIComponent(queryTerm || 'produit')}`, 
+                        priceXOF: Math.round((finalPrice * 1.03) / 500) * 500, 
+                        delivery: "Livraison Jumia Express 24h", 
+                        stock: true 
+                    },
+                    { 
+                        merchant: "Expat-Dakar Vendeur Pro", 
+                        url: `https://www.expat-dakar.com/items?q=${encodeURIComponent(queryTerm || 'produit')}`, 
+                        priceXOF: Math.round((finalPrice * 0.97) / 500) * 500, 
+                        delivery: "Retrait au Plateau / VDN", 
+                        stock: true 
+                    }
+                ];
+
+                generatedList.push({
+                    id: `sn-20opt-${i}-${Date.now()}`,
+                    name: title,
+                    category: category,
+                    condition: stateText,
+                    rating: parseFloat((4.0 + ((i % 10) * 0.1)).toFixed(1)),
+                    reviewsCount: 15 + (i * 12),
+                    image: img,
+                    quartier: quartier,
+                    merchantType: merchant.type,
+                    description: `Offre #${i} répertoriée par Google.sn pour "${queryTerm || 'produit'}". Disponible chez ${merchant.name} à ${quartier}. État: ${stateText}.`,
+                    priceXOF: finalPrice,
+                    offers: subOffers
+                });
+            }
+
+            return generatedList;
+        }
+
+        // ==========================================
+        // 3. CURRENCY & UI FORMATTING HELPERS
+        // ==========================================
+        function formatPrice(priceInXOF) {
+            const rate = EXCHANGE_RATES[state.currency] || 1;
+            const converted = Math.round(priceInXOF * rate);
+            const symbol = CURRENCY_SYMBOLS[state.currency] || "FCFA";
+
+            if (state.currency === 'XOF') return `${converted.toLocaleString('fr-FR')} ${symbol}`;
+            if (state.currency === 'EUR') return `${converted.toLocaleString('fr-FR')} ${symbol}`;
+            return `${symbol}${converted.toLocaleString('en-US')}`;
+        }
+
+        function getBestOffer(product) {
+            if (!product.offers || product.offers.length === 0) {
+                return { merchant: "Vendeur SN", priceXOF: product.priceXOF, url: "#", delivery: "Sénégal" };
+            }
+            return product.offers.reduce((best, curr) => (curr.priceXOF < best.priceXOF ? curr : best), product.offers[0]);
+        }
+
+        function renderStars(rating) {
+            let html = '';
+            const full = Math.floor(rating);
+            const half = rating % 1 >= 0.5;
+            for (let i = 0; i < full; i++) html += '<i class="fa-solid fa-star"></i>';
+            if (half) html += '<i class="fa-solid fa-star-half-stroke"></i>';
+            for (let i = 0; i < (5 - Math.ceil(rating)); i++) html += '<i class="fa-regular fa-star"></i>';
+            return html;
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            document.getElementById('toastIcon').className = isError 
+                ? "fa-solid fa-circle-exclamation text-rose-500 text-lg" 
+                : "fa-solid fa-circle-check text-emerald-400 dark:text-emerald-500 text-lg";
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none'), 3200);
+        }
+
+        // ==========================================
+        // 4. INITIALIZATION & SEARCH LISTENERS
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial search generate 20 dynamic default items
+            state.results20 = generate20Results("iPhone 15 & High-Tech Dakar");
+            setupSearchEngine();
+            setupFilterListeners();
+            setupApiModal();
+            updateBannerUI();
+            renderProducts();
+        });
+
+        function setupSearchEngine() {
+            const searchInput = document.getElementById('searchInput');
+            const btnSubmit = document.getElementById('btnSearchSubmit');
+            const clearBtn = document.getElementById('clearSearch');
+            const btnQuickGoogle = document.getElementById('btnQuickGoogleSn');
+            const btnExternalGoogle = document.getElementById('btnOpenExternalGoogle');
+            const autocompleteBox = document.getElementById('autocompleteResults');
+
+            function triggerSearch() {
+                const q = searchInput.value.trim();
+                state.query = q;
+                state.currentPage = 1;
+                autocompleteBox.classList.add('hidden');
+
+                if (q.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                    document.getElementById('searchStatusQuery').innerHTML = `
+                        20 offres variées générées pour : <strong class="text-emerald-600 dark:text-emerald-400 font-bold">"${q}"</strong> via Google.sn
+                    `;
+                    
+                    // Generate 20 distinct dynamic offers
+                    state.results20 = generate20Results(q);
+                    showToast(`20 offres d'e-commerce trouvées pour "${q}"`);
+                } else {
+                    clearBtn.classList.add('hidden');
+                    document.getElementById('searchStatusQuery').textContent = "20 résultats comparatifs générés pour le Sénégal";
+                    state.results20 = generate20Results("Catalogue Général Dakar");
+                }
+                renderProducts();
+            }
+
+            btnSubmit.addEventListener('click', (e) => {
+                e.preventDefault();
+                triggerSearch();
+            });
+
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    triggerSearch();
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const val = e.target.value.trim();
+                if (val.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                    renderAutocompleteSuggestions(val);
+                } else {
+                    clearBtn.classList.add('hidden');
+                    autocompleteBox.classList.add('hidden');
+                }
+            });
+
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                state.query = '';
+                clearBtn.classList.add('hidden');
+                autocompleteBox.classList.add('hidden');
+                state.results20 = generate20Results("Catalogue Général Dakar");
+                document.getElementById('searchStatusQuery').textContent = "20 résultats comparatifs générés pour le Sénégal";
+                renderProducts();
+            });
+
+            btnQuickGoogle.addEventListener('click', openGoogleSnTab);
+            btnExternalGoogle.addEventListener('click', openGoogleSnTab);
+            document.getElementById('btnDirectGoogleEmpty').addEventListener('click', openGoogleSnTab);
+
+            function openGoogleSnTab() {
+                const query = searchInput.value.trim() || "produit electronique";
+                const googleSnUrl = `https://www.google.sn/search?q=${encodeURIComponent('prix ' + query + ' dakar senegal')}`;
+                window.open(googleSnUrl, '_blank');
+            }
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !autocompleteBox.contains(e.target)) {
+                    autocompleteBox.classList.add('hidden');
+                }
+            });
+        }
+
+        function renderAutocompleteSuggestions(q) {
+            const autocompleteBox = document.getElementById('autocompleteResults');
+            
+            const suggestions = [
+                `${q} - Meilleur Prix Dakar`,
+                `${q} Jumia Sénégal`,
+                `${q} Expat-Dakar (Occasion / Neuf)`,
+                `${q} Auchan SN (Livraison express)`,
+                `${q} Boutiques VDN / Plateau`
+            ];
+
+            let html = suggestions.map(s => `
+                <div onclick="selectSuggestion('${s.replace(/'/g, "\\'")}')" class="p-2.5 flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-gray-700/60 cursor-pointer transition">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-brands fa-google text-rose-500 text-xs"></i>
+                        <span class="text-xs font-bold text-gray-900 dark:text-white">${s}</span>
+                    </div>
+                    <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded">20 Offres</span>
+                </div>
+            `).join('');
+
+            autocompleteBox.innerHTML = html;
+            autocompleteBox.classList.remove('hidden');
+        }
+
+        function selectSuggestion(term) {
+            const input = document.getElementById('searchInput');
+            input.value = term;
+            document.getElementById('autocompleteResults').classList.add('hidden');
+            state.query = term;
+            state.results20 = generate20Results(term);
+            renderProducts();
+        }
+
+        // ==========================================
+        // 5. RENDERING & PAGINATION FOR 20 ITEMS
+        // ==========================================
+        function getFilteredProducts() {
+            // Filter checkboxes
+            const selectedMerchantTypes = Array.from(document.querySelectorAll('.merchant-checkbox:checked')).map(cb => cb.value);
+
+            return state.results20.filter(p => {
+                // Category
+                if (state.selectedCategory !== 'all' && p.category !== state.selectedCategory) return false;
+
+                // Quartier
+                if (state.selectedQuartier !== 'Tous' && p.quartier !== state.selectedQuartier) return false;
+
+                // Condition
+                if (state.selectedCondition !== 'all' && !p.condition.toLowerCase().includes(state.selectedCondition.toLowerCase())) return false;
+
+                // Rating
+                if (p.rating < state.minRating) return false;
+
+                // Merchant checkbox
+                if (selectedMerchantTypes.length > 0 && !selectedMerchantTypes.includes(p.merchantType)) return false;
+
+                // Price
+                const best = getBestOffer(p);
+                if (best.priceXOF > state.maxPriceXOF) return false;
+
+                return true;
+            }).sort((a, b) => {
+                const bestA = getBestOffer(a);
+                const bestB = getBestOffer(b);
+
+                if (state.sortBy === 'price-asc') return bestA.priceXOF - bestB.priceXOF;
+                if (state.sortBy === 'price-desc') return bestB.priceXOF - bestA.priceXOF;
+                if (state.sortBy === 'rating') return b.rating - a.rating;
+                return b.reviewsCount - a.reviewsCount;
+            });
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const countEl = document.getElementById('productCount');
+
+            const filtered = getFilteredProducts();
+            countEl.textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                document.getElementById('paginationContainer').classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            document.getElementById('paginationContainer').classList.remove('hidden');
+
+            // Pagination calculations
+            const totalItems = filtered.length;
+            const perPage = state.itemsPerPage;
+            const totalPages = Math.ceil(totalItems / perPage);
+            if (state.currentPage > totalPages) state.currentPage = 1;
+
+            const startIndex = (state.currentPage - 1) * perPage;
+            const endIndex = Math.min(startIndex + perPage, totalItems);
+            const paginatedItems = filtered.slice(startIndex, endIndex);
+
+            // Update pagination info text
+            document.getElementById('paginationInfo').textContent = `Affichage des offres ${startIndex + 1} à ${endIndex} sur ${totalItems} (sur Google.sn)`;
+
+            // Render cards
+            grid.innerHTML = paginatedItems.map((product, idx) => {
+                const bestOffer = getBestOffer(product);
+                const inCompare = state.compareList.includes(product.id);
+                const globalIndex = startIndex + idx + 1;
+
+                return `
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group">
+                        <!-- Header Image + Offer Number Badge -->
+                        <div class="relative p-5 bg-gradient-to-b from-gray-50 to-emerald-50/20 dark:from-gray-700/40 dark:to-gray-800 flex items-center justify-center h-52 overflow-hidden">
+                            <span class="absolute top-3 left-3 bg-slate-900 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm">
+                                Offre #${globalIndex} / 20
+                            </span>
+
+                            <button onclick="toggleCompare('${product.id}')" class="absolute top-3 right-3 p-2 rounded-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-md text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 shadow-sm transition ${inCompare ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50' : ''}">
+                                <i class="fa-solid fa-code-compare"></i>
+                            </button>
+
+                            <img src="${product.image}" alt="${product.name}" class="max-h-40 object-contain transition-transform duration-300 group-hover:scale-105">
+                            
+                            <span class="absolute bottom-2 left-3 bg-white/90 dark:bg-gray-800/90 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600">
+                                ${product.condition}
+                            </span>
+                        </div>
+
+                        <!-- Info Content -->
+                        <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between text-[10px]">
+                                    <span class="font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">${product.category}</span>
+                                    <span class="text-gray-500 font-medium truncate max-w-[130px]"><i class="fa-solid fa-location-dot text-rose-500 mr-0.5"></i> ${product.quartier}</span>
+                                </div>
+                                <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base mt-1 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                                    ${product.name}
+                                </h3>
+
+                                <div class="flex items-center gap-2 mt-2">
+                                    <div class="flex text-amber-400 text-xs">${renderStars(product.rating)}</div>
+                                    <span class="text-xs font-semibold">${product.rating}</span>
+                                    <span class="text-xs text-gray-400">(${product.reviewsCount} avis)</span>
+                                </div>
+                            </div>
+
+                            <!-- Price converted & Button -->
+                            <div class="pt-3 border-t border-gray-100 dark:border-gray-700">
+                                <div class="flex items-baseline justify-between">
+                                    <div>
+                                        <span class="text-[10px] text-gray-400 block font-semibold">${bestOffer.merchant}</span>
+                                        <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">${formatPrice(bestOffer.priceXOF)}</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">
+                                            Stock Sénégal
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 mt-4">
+                                    <button onclick="openProductDetail('${product.id}')" class="w-full py-2 px-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-800 dark:text-gray-200 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-eye"></i> Offres (${product.offers ? product.offers.length : 1})
+                                    </button>
+                                    <button onclick="toggleCompare('${product.id}')" class="w-full py-2 px-3 ${inCompare ? 'bg-emerald-600 text-white' : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'} text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-plus"></i> ${inCompare ? 'Ajouté' : 'Comparer'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const container = document.getElementById('paginationButtons');
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            for (let page = 1; page <= totalPages; page++) {
+                const active = page === state.currentPage;
+                html += `
+                    <button onclick="changePage(${page})" class="px-3 py-1.5 rounded-lg text-xs font-bold transition ${active ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200'}">
+                        ${page}
+                    </button>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function changePage(page) {
+            state.currentPage = page;
+            renderProducts();
+            window.scrollTo({ top: 150, behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // 6. DETAIL MODAL & CHART & TOP 20 VENDORS
+        // ==========================================
+        function openProductDetail(productId) {
+            const product = state.results20.find(p => p.id === productId);
+            if (!product) return;
+
+            state.currentDetailProductId = productId;
+            const bestOffer = getBestOffer(product);
+
+            document.getElementById('modalCategory').textContent = product.category;
+            document.getElementById('modalCondition').textContent = product.condition;
+            document.getElementById('modalTitle').textContent = product.name;
+            document.getElementById('modalImg').src = product.image;
+            document.getElementById('modalDesc').textContent = product.description;
+            document.getElementById('modalRating').innerHTML = renderStars(product.rating);
+            document.getElementById('modalReviewCount').textContent = `(${product.reviewsCount} avis vendeurs)`;
+            document.getElementById('modalBestPrice').textContent = formatPrice(bestOffer.priceXOF);
+            document.getElementById('modalBestMerchant').textContent = `chez ${bestOffer.merchant}`;
+            document.getElementById('modalZoneText').textContent = product.quartier;
+            document.getElementById('modalStateText').textContent = product.condition;
+            document.getElementById('modalBuyBtn').href = bestOffer.url || '#';
+
+            // Complete merchant table
+            const offersTable = document.getElementById('merchantOffersTable');
+            const sortedOffers = [...product.offers].sort((a, b) => a.priceXOF - b.priceXOF);
+
+            offersTable.innerHTML = sortedOffers.map((offer, idx) => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
+                    <td class="p-3 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span class="w-5 h-5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-bold flex items-center justify-center">${idx + 1}</span>
+                        ${offer.merchant}
+                    </td>
+                    <td class="p-3 text-gray-500 font-medium">
+                        ${product.quartier}
+                    </td>
+                    <td class="p-3">
+                        <span class="text-emerald-600 font-semibold"><i class="fa-solid fa-check mr-1"></i>${product.condition}</span>
+                    </td>
+                    <td class="p-3 text-xs text-gray-500">
+                        ${offer.delivery}
+                    </td>
+                    <td class="p-3 text-right font-black text-sm text-gray-900 dark:text-white">
+                        ${formatPrice(offer.priceXOF)}
+                    </td>
+                    <td class="p-3 text-center">
+                        <a href="${offer.url}" target="_blank" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1">
+                            Acheter <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('productDetailModal').classList.remove('hidden');
+            renderPriceChart(product.priceXOF);
+        }
+
+        function renderPriceChart(currentXOF) {
+            const ctx = document.getElementById('priceHistoryChart').getContext('2d');
+            if (priceChartInstance) priceChartInstance.destroy();
+
+            const rate = EXCHANGE_RATES[state.currency] || 1;
+            const historyXOF = [
+                currentXOF * 1.15,
+                currentXOF * 1.10,
+                currentXOF * 1.08,
+                currentXOF * 1.05,
+                currentXOF * 1.02,
+                currentXOF
+            ].map(p => Math.round(p * rate));
+
+            priceChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct'],
+                    datasets: [{
+                        label: `Prix (${CURRENCY_SYMBOLS[state.currency]})`,
+                        data: historyXOF,
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { callback: v => `${v.toLocaleString('fr-FR')} ${CURRENCY_SYMBOLS[state.currency]}` } }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // 7. EVENT LISTENERS FOR FILTERS & MODALS
+        // ==========================================
+        function setupFilterListeners() {
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+
+            document.getElementById('currencySelect').addEventListener('change', (e) => {
+                state.currency = e.target.value;
+                updateBannerUI();
+                renderProducts();
+                showToast(`Devise modifiée : ${CURRENCY_SYMBOLS[state.currency]}`);
+            });
+
+            document.getElementById('itemsPerPageSelect').addEventListener('change', (e) => {
+                state.itemsPerPage = parseInt(e.target.value);
+                state.currentPage = 1;
+                renderProducts();
+            });
+
+            document.getElementById('cityInput').addEventListener('change', (e) => {
+                state.selectedQuartier = e.target.value;
+                state.currentPage = 1;
+                renderProducts();
+            });
+
+            document.getElementById('conditionFilter').addEventListener('change', (e) => {
+                state.selectedCondition = e.target.value;
+                state.currentPage = 1;
+                renderProducts();
+            });
+
+            document.getElementById('categoryFilter').addEventListener('change', (e) => {
+                state.selectedCategory = e.target.value;
+                state.currentPage = 1;
+                renderProducts();
+            });
+
+            document.querySelectorAll('.merchant-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    state.currentPage = 1;
+                    renderProducts();
+                });
+            });
+
+            document.getElementById('priceRange').addEventListener('input', (e) => {
+                state.maxPriceXOF = parseInt(e.target.value);
+                document.getElementById('priceValue').textContent = formatPrice(state.maxPriceXOF);
+                renderProducts();
+            });
+
+            document.querySelectorAll('#ratingFilterGroup .rating-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('#ratingFilterGroup .rating-btn').forEach(b => b.classList.remove('bg-emerald-600', 'text-white'));
+                    e.target.classList.add('bg-emerald-600', 'text-white');
+                    state.minRating = parseFloat(e.target.dataset.rating);
+                    state.currentPage = 1;
+                    renderProducts();
+                });
+            });
+
+            document.getElementById('sortSelect').addEventListener('change', (e) => {
+                state.sortBy = e.target.value;
+                renderProducts();
+            });
+
+            document.getElementById('resetFilters').addEventListener('click', resetAllFilters);
+            document.getElementById('resetFiltersEmpty').addEventListener('click', resetAllFilters);
+
+            document.getElementById('btnCloseDetail').addEventListener('click', () => {
+                document.getElementById('productDetailModal').classList.add('hidden');
+            });
+
+            document.getElementById('btnOpenCompare').addEventListener('click', openCompareModal);
+            document.getElementById('btnCloseCompare').addEventListener('click', () => {
+                document.getElementById('compareModal').classList.add('hidden');
+            });
+
+            document.getElementById('priceAlertForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                showToast("Alerte baisse de prix configurée avec succès !");
+                document.getElementById('priceAlertForm').reset();
+            });
+
+            document.getElementById('btnGeolocate').addEventListener('click', () => {
+                showToast("Localisation GPS : Dakar Centre");
+                document.getElementById('cityInput').value = "Dakar Plateau";
+                state.selectedQuartier = "Dakar Plateau";
+                renderProducts();
+            });
+        }
+
+        function resetAllFilters() {
+            state.selectedCategory = 'all';
+            state.selectedQuartier = 'Tous';
+            state.selectedCondition = 'all';
+            state.minRating = 0;
+            state.maxPriceXOF = 3000000;
+            state.currentPage = 1;
+            document.getElementById('categoryFilter').value = 'all';
+            document.getElementById('cityInput').value = 'Tous';
+            document.getElementById('conditionFilter').value = 'all';
+            document.getElementById('priceRange').value = 3000000;
+            document.getElementById('priceValue').textContent = formatPrice(3000000);
+            renderProducts();
+        }
+
+        function updateBannerUI() {
+            document.getElementById('bannerCurrency').textContent = `${state.currency} (${CURRENCY_SYMBOLS[state.currency]})`;
+            document.getElementById('priceValue').textContent = formatPrice(state.maxPriceXOF);
+        }
+
+        function setupApiModal() {
+            const modal = document.getElementById('apiSettingsModal');
+            document.getElementById('btnOpenApiSettings').addEventListener('click', () => {
+                document.getElementById('googleApiKey').value = state.googleApiKey;
+                document.getElementById('googleCxId').value = state.googleCxId;
+                modal.classList.remove('hidden');
+            });
+
+            document.getElementById('btnCloseApiModal').addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+
+            document.getElementById('btnSaveApiKey').addEventListener('click', () => {
+                state.googleApiKey = document.getElementById('googleApiKey').value.trim();
+                state.googleCxId = document.getElementById('googleCxId').value.trim();
+                localStorage.setItem('pricepulse_google_api_key', state.googleApiKey);
+                localStorage.setItem('pricepulse_google_cx_id', state.googleCxId);
+                modal.classList.add('hidden');
+                showToast("Configuration API enregistrée pour Google.sn");
+            });
+        }
+
+        function toggleCompare(id) {
+            const index = state.compareList.indexOf(id);
+            if (index > -1) {
+                state.compareList.splice(index, 1);
+                showToast("Produit retiré du comparateur");
+            } else {
+                if (state.compareList.length >= 4) return showToast("Maximum 4 produits comparables en même temps", true);
+                state.compareList.push(id);
+                showToast("Produit ajouté au comparateur");
+            }
+            document.getElementById('compareBadge').textContent = state.compareList.length;
+            renderProducts();
+        }
+
+        function openCompareModal() {
+            if (state.compareList.length < 2) return showToast("Sélectionnez au moins 2 produits pour les comparer côte à côte", true);
+            const container = document.getElementById('compareContent');
+            const items = state.compareList.map(id => state.results20.find(p => p.id === id)).filter(Boolean);
+
+            container.innerHTML = `
+                <table class="w-full text-left border-collapse min-w-[650px] text-xs">
+                    <thead>
+                        <tr>
+                            <th class="p-3 bg-gray-50 dark:bg-gray-700">Propriétés / Modèle</th>
+                            ${items.map(p => `<th class="p-3 text-center border-l font-bold">${p.name}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr>
+                            <td class="p-3 font-bold bg-gray-50 dark:bg-gray-700">Meilleur Prix Détecté</td>
+                            ${items.map(p => {
+                                const best = getBestOffer(p);
+                                return `<td class="p-3 text-center font-black text-emerald-600 text-base">${formatPrice(best.priceXOF)}<span class="block text-[10px] text-gray-400 font-normal">chez ${best.merchant}</span></td>`;
+                            }).join('')}
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold bg-gray-50 dark:bg-gray-700">Quartier / Vendeur</td>
+                            ${items.map(p => `<td class="p-3 text-center">${p.quartier}</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold bg-gray-50 dark:bg-gray-700">État du Produit</td>
+                            ${items.map(p => `<td class="p-3 text-center font-semibold text-blue-600">${p.condition}</td>`).join('')}
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold bg-gray-50 dark:bg-gray-700">Avis Vendeur</td>
+                            ${items.map(p => `<td class="p-3 text-center">★ ${p.rating} (${p.reviewsCount} avis)</td>`).join('')}
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('compareModal').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

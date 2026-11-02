@@ -1,0 +1,135 @@
+{
+  "sales": [],
+  "closedDays": [],
+  "subscribers": [
+    {
+      "id": 1,
+      "name": "Mamadou Diallo",
+      "phone": "77 890 12 34",
+      "formula": "VIP Illimité (30j)",
+      "count": 22,
+      "expiry": "28/11/2026"
+    },
+    {
+      "id": 2,
+      "name": "Abdoulaye Ndiaye",
+      "phone": "76 543 21 09",
+      "formula": "Forfait 4 Coupes",
+      "count": 3,
+      "expiry": "15/12/2026"
+    }
+  ],
+  "expenses": [],
+  "catalog": [
+    {
+      "id": 1,
+      "name": "Coupe Classique",
+      "price": 2000,
+      "category": "service",
+      "stock": 999,
+      "icon": "fa-scissors",
+      "color": "from-amber-500/20 to-amber-600/10"
+    },
+    {
+      "id": 2,
+      "name": "Dégradé Pro & Barbe",
+      "price": 3500,
+      "category": "service",
+      "stock": 999,
+      "icon": "fa-user-tie",
+      "color": "from-brand-500/20 to-brand-600/10"
+    },
+    {
+      "id": 3,
+      "name": "Coupe VIP + Soin Visage",
+      "price": 5000,
+      "category": "service",
+      "stock": 999,
+      "icon": "fa-crown",
+      "color": "from-yellow-500/20 to-amber-500/10"
+    },
+    {
+      "id": 4,
+      "name": "Rasage Traditionnel Barbe",
+      "price": 1500,
+      "category": "service",
+      "stock": 999,
+      "icon": "fa-feather",
+      "color": "from-orange-500/25 to-amber-600/10"
+    },
+    {
+      "id": 5,
+      "name": "Shampooing & Massage",
+      "price": 2000,
+      "category": "service",
+      "stock": 999,
+      "icon": "fa-pump-soap",
+      "color": "from-blue-500/20 to-indigo-600/10"
+    },
+    {
+      "id": 6,
+      "name": "Teinture Barbe & Cheveux",
+      "price": 4000,
+      "category": "service",
+      "stock": 999,
+      "icon": "fa-palette",
+      "color": "from-purple-500/20 to-pink-600/10"
+    },
+    {
+      "id": 7,
+      "name": "Pommade Coiffante Pro",
+      "price": 3000,
+      "category": "product",
+      "stock": 14,
+      "icon": "fa-jar",
+      "color": "from-emerald-500/20 to-teal-600/10"
+    },
+    {
+      "id": 8,
+      "name": "Huile Barbe Bio 50ml",
+      "price": 4500,
+      "category": "product",
+      "stock": 8,
+      "icon": "fa-bottle-droplet",
+      "color": "from-cyan-500/20 to-blue-600/10"
+    },
+    {
+      "id": 9,
+      "name": "Spray Rafraîchissant",
+      "price": 2500,
+      "category": "product",
+      "stock": 3,
+      "icon": "fa-spray-can-sparkles",
+      "color": "from-rose-500/20 to-orange-600/10"
+    }
+  ],
+  "barbers": [
+    {
+      "id": 1,
+      "name": "user",
+      "commissionRate": 40
+    },
+    {
+      "id": 2,
+      "name": "user2",
+      "commissionRate": 40
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "SEYNABOU",
+      "login": "SEYNABOU",
+      "pass": "Juillet2012",
+      "role": "Super-Admin"
+    },
+    {
+      "id": 2,
+      "name": "user",
+      "login": "user",
+      "pass": "1234567",
+      "role": "Coiffeur / Caissier"
+    }
+  ],
+  "exportDate": "01/11/2026 20:20:22"
+}

@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunuBarber Shop - SaaS Manager & POS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        },
+                        darkbg: '#1c1917',
+                        darkcard: '#292524',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Pro / Free Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1c1917; }
+        ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #57534e; }
+        .glass-card {
+            background: rgba(41, 37, 36, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-darkbg text-stone-200 h-full overflow-hidden flex flex-col selection:bg-amber-500 selection:text-stone-950">
+
+    <!-- ÉCRAN DE CONNEXION -->
+    <div id="loginScreen" class="fixed inset-0 z-50 bg-darkbg flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-8 rounded-3xl shadow-2xl border border-amber-500/20 relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20 text-stone-950 text-2xl font-black">
+                    <i class="fa-solid fa-scissors"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold tracking-tight text-amber-100">SUNUBARBER SHOP</h1>
+                <p class="text-xs text-amber-200/60 mt-1">SaaS de Gestion & Caisse Tactile Professionnelle</p>
+            </div>
+
+            <form onsubmit="handleLocalLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Identifiant</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" id="loginUsername" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-3 pl-10 pr-4 text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-amber-500 transition" placeholder="Ex: SEYNABOU ou user">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Mot de passe</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="loginPassword" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-3 pl-10 pr-4 text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-amber-500 transition" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div id="loginErrorMessage" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs text-center font-semibold">
+                    Identifiant ou mot de passe incorrect.
+                </div>
+
+                <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 font-extrabold text-sm shadow-lg shadow-amber-500/25 transition active:scale-[0.98]">
+                    Se connecter au Salon
+                </button>
+            </form>
+
+            <div class="mt-6 pt-6 border-t border-stone-700/40 text-center">
+                <p class="text-[11px] text-stone-400 mb-3">Accès rapide comptes de test :</p>
+                <div class="flex gap-2 justify-center">
+                    <button type="button" onclick="fillLogin('SEYNABOU', 'Juillet2012')" class="px-3 py-1.5 rounded-lg bg-stone-900 border border-stone-700/80 text-xs font-bold text-amber-400 hover:border-amber-500/50 transition">
+                        Admin (Seynabou)
+                    </button>
+                    <button type="button" onclick="fillLogin('user', '1234567')" class="px-3 py-1.5 rounded-lg bg-stone-900 border border-stone-700/80 text-xs font-bold text-stone-300 hover:border-amber-500/50 transition">
+                        Coiffeur (User)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION PRINCIPALE -->
+    <div id="appContainer" class="hidden flex-1 flex flex-col h-full overflow-hidden">
+        
+        <!-- HEADER TOP NAVIGATION -->
+        <header class="h-16 bg-darkcard/95 border-b border-amber-500/15 px-6 flex items-center justify-between shrink-0 z-20">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-lg border border-amber-500/30">
+                    <i class="fa-solid fa-scissors"></i>
+                </div>
+                <div>
+                    <h2 class="font-extrabold text-sm tracking-wide text-amber-100">SUNUBARBER SHOP</h2>
+                    <p class="text-[10px] text-emerald-400 font-bold flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Système SaaS Actif (Cloud & Local Sync)
+                    </p>
+                </div>
+            </div>
+
+            <!-- MENU ONGLETS -->
+            <nav class="hidden xl:flex items-center space-x-1 bg-stone-900 p-1.5 rounded-2xl border border-stone-700/60">
+                <button onclick="switchTab('caisse')" id="nav-btn-caisse" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-amber-500 text-stone-950 shadow">
+                    <i class="fa-solid fa-cash-register"></i> Caisse POS
+                </button>
+                <button onclick="switchTab('catalogue')" id="nav-btn-catalogue" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-stone-400 hover:text-stone-200">
+                    <i class="fa-solid fa-boxes-stacked"></i> Catalogue & Stocks
+                </button>
+                <button onclick="switchTab('abonnements')" id="nav-btn-abonnements" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-stone-400 hover:text-stone-200">
+                    <i class="fa-solid fa-address-card"></i> Abonnés VIP
+                </button>
+                <button onclick="switchTab('depenses')" id="nav-btn-depenses" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-stone-400 hover:text-stone-200">
+                    <i class="fa-solid fa-receipt"></i> Dépenses
+                </button>
+                <button onclick="switchTab('produits_vendus')" id="nav-btn-produits_vendus" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-stone-400 hover:text-stone-200">
+                    <i class="fa-solid fa-ranking-star"></i> Produits Vendus
+                </button>
+                <button onclick="switchTab('dashboard')" id="nav-btn-dashboard" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-stone-400 hover:text-stone-200">
+                    <i class="fa-solid fa-chart-pie"></i> Tableau de bord
+                </button>
+                <button onclick="switchTab('comptes')" id="nav-btn-comptes" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-stone-400 hover:text-stone-200">
+                    <i class="fa-solid fa-users-gear"></i> Comptes
+                </button>
+                <button onclick="switchTab('sauvegarde')" id="nav-btn-sauvegarde" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-stone-400 hover:text-stone-200">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> Sauvegarde
+                </button>
+            </nav>
+
+            <!-- USER PROFILE & LOGOUT -->
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:flex flex-col text-right">
+                    <span id="userName" class="text-xs font-bold text-stone-200">Utilisateur</span>
+                    <span id="userRoleBadge" class="text-[10px] text-amber-400 font-semibold">Rôle</span>
+                </div>
+                <div id="userAvatar" class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 font-extrabold flex items-center justify-center text-sm">
+                    U
+                </div>
+                <button onclick="handleLogout()" class="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 flex items-center justify-center transition" title="Déconnexion">
+                    <i class="fa-solid fa-power-off text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENU DES ONGLETS -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-darkbg">
+            
+            <!-- ONGLET 1 : CAISSE POS -->
+            <div id="tab-caisse" class="tab-content h-full flex flex-col xl:flex-row gap-6">
+                <!-- Grille Catalogue Caisse -->
+                <div class="flex-1 flex flex-col space-y-4 overflow-hidden">
+                    <div class="flex items-center justify-between shrink-0">
+                        <div class="flex items-center space-x-2 bg-darkcard p-1 rounded-xl border border-stone-700/60 w-full max-w-md">
+                            <button onclick="filterCategory('all')" id="cat-all" class="cat-btn flex-1 py-2 rounded-lg bg-amber-500 text-stone-950 font-bold transition shadow text-xs">Tout</button>
+                            <button onclick="filterCategory('service')" id="cat-service" class="cat-btn flex-1 py-2 rounded-lg text-stone-400 hover:text-stone-200 transition text-xs">Prestations</button>
+                            <button onclick="filterCategory('product')" id="cat-product" class="cat-btn flex-1 py-2 rounded-lg text-stone-400 hover:text-stone-200 transition text-xs">Produits</button>
+                        </div>
+                    </div>
+
+                    <div id="posItemsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 overflow-y-auto pr-1 pb-4 flex-1">
+                        <!-- Généré dynamiquement -->
+                    </div>
+                </div>
+
+                <!-- Panier & Encaissement -->
+                <div class="w-full xl:w-96 glass-card p-5 rounded-3xl flex flex-col shrink-0 border border-amber-500/15 shadow-xl">
+                    <div class="flex items-center justify-between pb-4 border-b border-stone-700/60 mb-4">
+                        <h3 class="font-bold text-sm text-amber-100 flex items-center gap-2">
+                            <i class="fa-solid fa-cart-shopping text-amber-400"></i> Panier Actif
+                        </h3>
+                        <button onclick="clearCart()" class="text-xs text-rose-400 hover:text-rose-300 font-semibold"><i class="fa-solid fa-trash-can mr-1"></i> Vider</button>
+                    </div>
+
+                    <!-- Coiffeur en charge -->
+                    <div class="mb-4">
+                        <label class="block text-[11px] font-semibold text-stone-400 mb-1">Coiffeur / Prestataire</label>
+                        <select id="cartBarber" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl px-3 py-2.5 text-xs text-stone-100 font-bold focus:outline-none focus:border-amber-500">
+                            <!-- Rempli dynamiquement -->
+                        </select>
+                    </div>
+
+                    <!-- Liste articles panier -->
+                    <div id="cartItemsContainer" class="flex-1 overflow-y-auto space-y-2 mb-4 pr-1 min-h-[160px] max-h-[220px]">
+                        <div class="text-center py-8 text-stone-500 text-xs space-y-2">
+                            <i class="fa-solid fa-basket-shopping text-2xl opacity-40"></i>
+                            <p>Votre panier est vide.<br>Cliquez sur les prestations ci-contre.</p>
+                        </div>
+                    </div>
+
+                    <!-- Modes de Paiement -->
+                    <div class="mb-4 pt-3 border-t border-stone-700/60">
+                        <label class="block text-[11px] font-semibold text-stone-400 mb-2">Mode de Règlement</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="setPayMethod('Espèces')" id="pay-Espèces" class="pay-btn p-2.5 rounded-xl border border-amber-500 bg-amber-500/10 text-amber-400 flex items-center justify-center gap-2 transition active:scale-95 text-xs font-bold">
+                                <i class="fa-solid fa-money-bill-wave"></i> Espèces
+                            </button>
+                            <button type="button" onclick="setPayMethod('Wave')" id="pay-Wave" class="pay-btn p-2.5 rounded-xl border border-stone-700/80 bg-stone-900 text-stone-300 hover:border-amber-500/50 flex items-center justify-center gap-2 transition active:scale-95 text-xs font-bold">
+                                <i class="fa-solid fa-mobile-screen"></i> Wave
+                            </button>
+                            <button type="button" onclick="setPayMethod('Orange Money')" id="pay-Orange Money" class="pay-btn p-2.5 rounded-xl border border-stone-700/80 bg-stone-900 text-stone-300 hover:border-amber-500/50 flex items-center justify-center gap-2 transition active:scale-95 text-xs font-bold">
+                                <i class="fa-solid fa-wallet"></i> Orange Money
+                            </button>
+                            <button type="button" onclick="setPayMethod('CB')" id="pay-CB" class="pay-btn p-2.5 rounded-xl border border-stone-700/80 bg-stone-900 text-stone-300 hover:border-amber-500/50 flex items-center justify-center gap-2 transition active:scale-95 text-xs font-bold">
+                                <i class="fa-solid fa-credit-card"></i> Carte Bancaire
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Total & Encaissement -->
+                    <div class="pt-3 border-t border-stone-700/60 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-stone-400 font-semibold">Total à Payer :</span>
+                            <span id="cartTotal" class="text-xl font-black text-amber-400">0 FCFA</span>
+                        </div>
+                        <button onclick="checkoutCart()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 font-extrabold text-sm shadow-lg shadow-amber-500/25 transition active:scale-98">
+                            <i class="fa-solid fa-check mr-2"></i> Encaisser la Prestation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET 2 : CATALOGUE & STOCKS ADMIN -->
+            <div id="tab-catalogue" class="tab-content hidden h-full flex flex-col space-y-6">
+                <div class="flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-amber-100">Catalogue & Gestion des Stocks</h2>
+                        <p class="text-xs text-stone-400">Ajoutez, modifiez ou supprimez vos prestations et produits avec gestion des stocks en temps réel.</p>
+                    </div>
+                    <button onclick="openModal('catalogItemModal'); document.getElementById('catalogItemForm').reset(); document.getElementById('editCatalogId').value='';" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-extrabold text-xs flex items-center gap-2 shadow transition">
+                        <i class="fa-solid fa-plus"></i> Nouvel Article / Prestation
+                    </button>
+                </div>
+
+                <div class="glass-card rounded-2xl border border-amber-500/15 overflow-hidden flex-1">
+                    <div class="overflow-x-auto h-full">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-darkcard border-b border-stone-700/60 text-stone-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Désignation</th>
+                                    <th class="p-3">Catégorie</th>
+                                    <th class="p-3">Prix Unitaire</th>
+                                    <th class="p-3">Stock Actuel</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminCatalogTableBody" class="divide-y divide-stone-800">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET 3 : ABONNÉS VIP -->
+            <div id="tab-abonnements" class="tab-content hidden h-full flex flex-col space-y-6">
+                <div class="flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-amber-100">Gestion des Abonnés VIP</h2>
+                        <p class="text-xs text-stone-400">Suivi des forfaits mensuels et des coupes restantes de vos clients fidèles.</p>
+                    </div>
+                    <button onclick="openModal('subscriberModal'); document.getElementById('subscriberForm').reset(); document.getElementById('editSubId').value='';" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-extrabold text-xs flex items-center gap-2 shadow transition">
+                        <i class="fa-solid fa-user-plus"></i> Ajouter un Abonné
+                    </button>
+                </div>
+
+                <div class="glass-card rounded-2xl border border-amber-500/15 overflow-hidden flex-1">
+                    <div class="overflow-x-auto h-full">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-darkcard border-b border-stone-700/60 text-stone-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Nom du Client</th>
+                                    <th class="p-3">Téléphone</th>
+                                    <th class="p-3">Formule / Forfait</th>
+                                    <th class="p-3">Coupes Restantes</th>
+                                    <th class="p-3">Validité</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subscribersTableBody" class="divide-y divide-stone-800">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET 4 : DÉPENSES -->
+            <div id="tab-depenses" class="tab-content hidden h-full flex flex-col space-y-6">
+                <div class="flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-amber-100">Registre des Dépenses & Sorties de Caisse</h2>
+                        <p class="text-xs text-stone-400">Enregistrez les achats de consommables, factures et petites caisses du salon.</p>
+                    </div>
+                    <button onclick="openModal('expenseModal'); document.getElementById('expenseForm').reset(); document.getElementById('editExpId').value='';" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-extrabold text-xs flex items-center gap-2 shadow transition">
+                        <i class="fa-solid fa-circle-plus"></i> Enregistrer une Dépense
+                    </button>
+                </div>
+
+                <div class="glass-card rounded-2xl border border-amber-500/15 overflow-hidden flex-1">
+                    <div class="overflow-x-auto h-full">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-darkcard border-b border-stone-700/60 text-stone-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Heure</th>
+                                    <th class="p-3">Motif de la Dépense</th>
+                                    <th class="p-3">Catégorie</th>
+                                    <th class="p-3">Montant</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expensesTableBody" class="divide-y divide-stone-800">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET 5 : PRODUITS VENDUS & CLASSEMENT -->
+            <div id="tab-produits_vendus" class="tab-content hidden h-full flex flex-col space-y-6">
+                <div class="flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-amber-100">Produits Vendus & Classement Best-Sellers</h2>
+                        <p class="text-xs text-stone-400">Analysez les articles les plus vendus et l'historique détaillé des sorties de stock.</p>
+                    </div>
+                    <div class="bg-darkcard px-4 py-2 rounded-xl border border-amber-500/15 text-xs">
+                        Total Produits Vendus : <span id="totalProductsSoldCount" class="font-extrabold text-amber-400">0 unités</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 overflow-hidden">
+                    <!-- Classement des meilleurs produits -->
+                    <div class="glass-card rounded-2xl border border-amber-500/15 p-5 flex flex-col">
+                        <h3 class="font-bold text-sm text-amber-100 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-amber-400"></i> Top Produits Mieux Vendus
+                        </h3>
+                        <div class="overflow-y-auto flex-1">
+                            <table class="w-full text-left text-xs">
+                                <thead class="text-stone-400 border-b border-stone-700/60">
+                                    <tr>
+                                        <th class="pb-2">Produit</th>
+                                        <th class="pb-2 text-center">Qté Vendue</th>
+                                        <th class="pb-2 text-right">CA Généré</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topProductsTableBody" class="divide-y divide-stone-800">
+                                    <!-- Rempli dynamiquement -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Historique détaillé des ventes de produits -->
+                    <div class="glass-card rounded-2xl border border-amber-500/15 p-5 flex flex-col lg:col-span-2">
+                        <h3 class="font-bold text-sm text-amber-100 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Historique Détaillé des Ventes de Produits
+                        </h3>
+                        <div class="overflow-y-auto flex-1">
+                            <table class="w-full text-left text-xs">
+                                <thead class="text-stone-400 border-b border-stone-700/60">
+                                    <tr>
+                                        <th class="pb-2">Heure</th>
+                                        <th class="pb-2">Produit</th>
+                                        <th class="pb-2 text-center">Quantité</th>
+                                        <th class="pb-2 text-right">Montant Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="soldProductsHistoryBody" class="divide-y divide-stone-800">
+                                    <!-- Rempli dynamiquement -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET 6 : TABLEAU DE BORD & COMMISSIONS -->
+            <div id="tab-dashboard" class="tab-content hidden h-full flex flex-col space-y-6 overflow-y-auto">
+                <div class="flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-amber-100">Tableau de Bord & Commissions Coiffeurs</h2>
+                        <p class="text-xs text-stone-400">Chiffre d'affaires global, bénéfice net et calcul automatique des parts coiffeurs.</p>
+                    </div>
+                    <button onclick="triggerCloseDay()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 font-extrabold text-xs flex items-center gap-2 shadow transition">
+                        <i class="fa-solid fa-lock"></i> Clôturer la Journée & Archiver
+                    </button>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+                    <div class="glass-card p-5 rounded-2xl border border-amber-500/15">
+                        <div class="text-xs font-semibold text-stone-400">Recettes Totales</div>
+                        <div id="dashRecetteMois" class="text-2xl font-black text-amber-400 mt-2">0 FCFA</div>
+                    </div>
+                    <div class="glass-card p-5 rounded-2xl border border-amber-500/15">
+                        <div class="text-xs font-semibold text-stone-400">Total Dépenses</div>
+                        <div id="dashDepensesMois" class="text-2xl font-black text-rose-400 mt-2">0 FCFA</div>
+                    </div>
+                    <div class="glass-card p-5 rounded-2xl border border-amber-500/15">
+                        <div class="text-xs font-semibold text-stone-400">Bénéfice Net en Caisse</div>
+                        <div id="dashNetMois" class="text-2xl font-black text-emerald-400 mt-2">0 FCFA</div>
+                    </div>
+                    <div class="glass-card p-5 rounded-2xl border border-amber-500/15">
+                        <div class="text-xs font-semibold text-stone-400">Clients Encaissés</div>
+                        <div id="dashClientsCount" class="text-2xl font-black text-stone-100 mt-2">0</div>
+                    </div>
+                </div>
+
+                <!-- Tableau Commissions Coiffeurs -->
+                <div class="glass-card rounded-2xl border border-amber-500/15 p-5">
+                    <h3 class="font-bold text-sm text-amber-100 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-percent text-amber-400"></i> Performance & Commissions des Coiffeurs
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-darkcard border-b border-stone-700/60 text-stone-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Nom du Coiffeur</th>
+                                    <th class="p-3">Prestations Réalisées</th>
+                                    <th class="p-3">Chiffre d'Affaires Généré</th>
+                                    <th class="p-3">Taux de Commission</th>
+                                    <th class="p-3 text-right">Commission Due</th>
+                                </tr>
+                            </thead>
+                            <tbody id="barberStatsTableBody" class="divide-y divide-stone-800">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Historique des Clôtures Journalières -->
+                <div class="glass-card rounded-2xl border border-amber-500/15 p-5">
+                    <h3 class="font-bold text-sm text-amber-100 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-check text-emerald-400"></i> Historique des Journées Clôturées
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-darkcard border-b border-stone-700/60 text-stone-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Date / Session</th>
+                                    <th class="p-3">Recette CA</th>
+                                    <th class="p-3">Dépenses</th>
+                                    <th class="p-3">Bénéfice Net</th>
+                                    <th class="p-3">Clients</th>
+                                    <th class="p-3 text-right">Clôturé par</th>
+                                </tr>
+                            </thead>
+                            <tbody id="closedDaysTableBody" class="divide-y divide-stone-800">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET 7 : GESTION DES COMPTES -->
+            <div id="tab-comptes" class="tab-content hidden h-full flex flex-col space-y-6">
+                <div class="flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-amber-100">Gestion des Comptes & Accès Utilisateurs</h2>
+                        <p class="text-xs text-stone-400">Gérez les identifiants de connexion et les rôles de votre personnel.</p>
+                    </div>
+                    <button onclick="openModal('userModal'); document.getElementById('userForm').reset();" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-extrabold text-xs flex items-center gap-2 shadow transition">
+                        <i class="fa-solid fa-user-plus"></i> Créer un Compte
+                    </button>
+                </div>
+
+                <div class="glass-card rounded-2xl border border-amber-500/15 overflow-hidden flex-1">
+                    <div class="overflow-x-auto h-full">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-darkcard border-b border-stone-700/60 text-stone-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Nom Complet</th>
+                                    <th class="p-3">Identifiant (Login)</th>
+                                    <th class="p-3">Mot de Passe</th>
+                                    <th class="p-3">Rôle / Privilège</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody" class="divide-y divide-stone-800">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET 8 : SAUVEGARDE SAAS -->
+            <div id="tab-sauvegarde" class="tab-content hidden h-full flex flex-col space-y-6">
+                <div class="flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-amber-100">Sauvegarde & Restauration du SaaS</h2>
+                        <p class="text-xs text-stone-400">Sauvegarde automatique Cloud et export/import manuel de vos données.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-2xl border border-amber-500/15 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl mb-4 border border-amber-500/30">
+                                <i class="fa-solid fa-file-arrow-down"></i>
+                            </div>
+                            <h3 class="font-bold text-base text-amber-100 mb-1">Exportation d'une Sauvegarde</h3>
+                            <p class="text-xs text-stone-400">Téléchargez une copie complète et sécurisée de toute la base de données du salon (ventes, abonnés, catalogue, dépenses) au format JSON.</p>
+                        </div>
+                        <button onclick="exportSaasData()" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-extrabold text-xs shadow transition">
+                            Télécharger le Fichier de Sauvegarde (.json)
+                        </button>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl border border-amber-500/15 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mb-4 border border-emerald-500/30">
+                                <i class="fa-solid fa-file-arrow-up"></i>
+                            </div>
+                            <h3 class="font-bold text-base text-amber-100 mb-1">Restauration des Données</h3>
+                            <p class="text-xs text-stone-400">Restaurez l'état complet du SaaS en important un fichier de sauvegarde JSON précédemment téléchargé.</p>
+                        </div>
+                        <label class="w-full py-3 rounded-xl bg-stone-900 border border-amber-500 text-amber-400 hover:bg-amber-500/10 font-extrabold text-xs text-center cursor-pointer transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-folder-open"></i> Importer un Fichier de Sauvegarde
+                            <input type="file" id="importFile" accept=".json" onchange="importSaasData(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODALES DE GESTION -->
+
+    <!-- Modale Ajout / Modification Article Catalogue -->
+    <div id="catalogItemModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl">
+            <h3 id="catalogModalTitle" class="font-extrabold text-base text-amber-100 mb-4">Nouvel Article / Prestation</h3>
+            <form onsubmit="handleSaveCatalogItem(event)" id="catalogItemForm" class="space-y-4">
+                <input type="hidden" id="editCatalogId">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Nom de l'article / Prestation</label>
+                    <input type="text" id="catItemName" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: Coupe Dégradé VIP">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Catégorie</label>
+                    <select id="catItemCategory" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                        <option value="service">Prestation (Service)</option>
+                        <option value="product">Produit (Article en stock)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Prix Unitaire (FCFA)</label>
+                    <input type="number" id="catItemPrice" required min="0" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: 3000">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Quantité en Stock (pour les produits)</label>
+                    <input type="number" id="catItemStock" required min="0" value="10" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: 15">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('catalogItemModal')" class="px-4 py-2 rounded-xl bg-stone-900 border border-stone-700/80 text-xs font-bold text-stone-300">Annuler</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-extrabold shadow">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale Ajout / Modification Abonné VIP -->
+    <div id="subscriberModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl">
+            <h3 id="subModalTitle" class="font-extrabold text-base text-amber-100 mb-4">Ajouter un Abonné VIP</h3>
+            <form onsubmit="handleSaveSubscriber(event)" id="subscriberForm" class="space-y-4">
+                <input type="hidden" id="editSubId">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Nom Complet</label>
+                    <input type="text" id="subName" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: Amadou Ba">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Téléphone</label>
+                    <input type="text" id="subPhone" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: 77 123 45 67">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Formule / Forfait</label>
+                    <input type="text" id="subFormula" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: Forfait 4 Coupes ou VIP Illimité">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Nombre de Coupes Restantes</label>
+                    <input type="number" id="subCount" required min="1" value="4" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('subscriberModal')" class="px-4 py-2 rounded-xl bg-stone-900 border border-stone-700/80 text-xs font-bold text-stone-300">Annuler</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-extrabold shadow">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale Ajout / Modification Dépense -->
+    <div id="expenseModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl">
+            <h3 id="expModalTitle" class="font-extrabold text-base text-amber-100 mb-4">Enregistrer une Dépense</h3>
+            <form onsubmit="handleSaveExpense(event)" id="expenseForm" class="space-y-4">
+                <input type="hidden" id="editExpId">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Motif de la Dépense</label>
+                    <input type="text" id="expMotif" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: Achat lames de rasoir & gel">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Catégorie</label>
+                    <select id="expCat" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                        <option value="Consommables">Consommables</option>
+                        <option value="Facture Senelec / Eau">Facture Senelec / Eau</option>
+                        <option value="Loyer">Loyer</option>
+                        <option value="Maintenance / Matériel">Maintenance / Matériel</option>
+                        <option value="Divers">Divers</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Montant (FCFA)</label>
+                    <input type="number" id="expAmount" required min="0" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: 5000">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('expenseModal')" class="px-4 py-2 rounded-xl bg-stone-900 border border-stone-700/80 text-xs font-bold text-stone-300">Annuler</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-extrabold shadow">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale Clôture Journalière -->
+    <div id="closeDayModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl text-center">
+            <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mx-auto mb-4 border border-amber-500/30">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h3 class="font-extrabold text-lg text-amber-100 mb-2">Clôture de la Journée</h3>
+            <p class="text-xs text-stone-400 mb-6">Cette action va archiver les recettes du jour et réinitialiser la caisse journalière.</p>
+            
+            <div class="bg-stone-900 p-4 rounded-2xl border border-stone-700/80 space-y-2 text-xs mb-6 text-left">
+                <div class="flex justify-between">
+                    <span class="text-stone-400">Total Recettes CA :</span>
+                    <span id="modalCloseCA" class="font-bold text-amber-400">0 FCFA</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-stone-400">Total Dépenses :</span>
+                    <span id="modalCloseDep" class="font-bold text-rose-400">0 FCFA</span>
+                </div>
+                <div class="flex justify-between pt-2 border-t border-stone-700/80">
+                    <span class="font-bold text-stone-100">Bénéfice Net Coffre :</span>
+                    <span id="modalCloseNet" class="font-extrabold text-emerald-400 text-sm">0 FCFA</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('closeDayModal')" class="px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-700/80 text-xs font-bold text-stone-300">Annuler</button>
+                <button type="button" onclick="confirmCloseDay()" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-extrabold shadow">Confirmer la Clôture</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Ajout Utilisateur -->
+    <div id="userModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl">
+            <h3 class="font-extrabold text-base text-amber-100 mb-4">Créer un Compte Employé</h3>
+            <form onsubmit="handleAddUser(event)" id="userForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Nom Complet</label>
+                    <input type="text" id="newUserNameInput" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: Moussa Diop">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Identifiant de Connexion</label>
+                    <input type="text" id="newUserLogin" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: moussa">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Mot de Passe</label>
+                    <input type="text" id="newUserPass" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500" placeholder="Ex: 123456">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Rôle</label>
+                    <select id="newUserRole" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                        <option value="Coiffeur / Caissier">Coiffeur / Caissier</option>
+                        <option value="Super-Admin">Super-Admin</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('userModal')" class="px-4 py-2 rounded-xl bg-stone-900 border border-stone-700/80 text-xs font-bold text-stone-300">Annuler</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-extrabold shadow">Créer le Compte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale Modification Utilisateur -->
+    <div id="editUserModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl">
+            <h3 class="font-extrabold text-base text-amber-100 mb-4">Modifier le Compte</h3>
+            <form onsubmit="handleUpdateUser(event)" id="editUserForm" class="space-y-4">
+                <input type="hidden" id="editUserId">
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Nom Complet</label>
+                    <input type="text" id="editUserNameInput" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Identifiant de Connexion</label>
+                    <input type="text" id="editUserLogin" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Mot de Passe</label>
+                    <input type="text" id="editUserPass" required class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-stone-300 mb-1">Rôle</label>
+                    <select id="editUserRole" class="w-full bg-stone-900 border border-stone-700/80 rounded-xl py-2.5 px-3 text-xs text-stone-100 focus:outline-none focus:border-amber-500">
+                        <option value="Coiffeur / Caissier">Coiffeur / Caissier</option>
+                        <option value="Super-Admin">Super-Admin</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('editUserModal')" class="px-4 py-2 rounded-xl bg-stone-900 border border-stone-700/80 text-xs font-bold text-stone-300">Annuler</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-extrabold shadow">Mettre à jour</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastNotification" class="fixed top-5 right-5 z-50 transform translate-y-[-200%] opacity-0 transition-all duration-300 flex items-center gap-3 bg-darkcard border border-amber-500/30 px-4 py-3 rounded-2xl shadow-2xl">
+        <div id="toastIconContainer" class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-amber-400 text-base"></i>
+        </div>
+        <div>
+            <div id="toastText" class="text-xs font-bold text-stone-100">Notification</div>
+        </div>
+    </div>
+
+    <!-- FIREBASE & SCRIPT APPLICATIF -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sunubarber-shop-saas';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", projectId: "demo" };
+
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch(e) {
+            console.error("Erreur Firebase:", e);
+        }
+
+        window.state = {
+            currentUser: null,
+            currentNav: 'caisse',
+            cart: [],
+            selectedPaymentMethod: 'Espèces',
+            currentCategoryFilter: 'all',
+            sales: [],
+            closedDays: [],
+            subscribers: [
+                { id: 1, name: 'Mamadou Diallo', phone: '77 890 12 34', formula: 'VIP Illimité (30j)', count: 22, expiry: '28/11/2026' },
+                { id: 2, name: 'Abdoulaye Ndiaye', phone: '76 543 21 09', formula: 'Forfait 4 Coupes', count: 3, expiry: '15/12/2026' }
+            ],
+            expenses: [
+                { id: 1, time: '09:30', motif: 'Achat lames de rechange', category: 'Consommables', amount: 3500 },
+                { id: 2, time: '11:15', motif: 'Facture d\'eau SDE', category: 'Facture Senelec / Eau', amount: 8000 }
+            ],
+            catalog: [
+                { id: 1, name: 'Coupe Classique', price: 2000, category: 'service', stock: 999, icon: 'fa-scissors', color: 'from-amber-500/20 to-amber-600/10' },
+                { id: 2, name: 'Dégradé Pro & Barbe', price: 3500, category: 'service', stock: 999, icon: 'fa-user-tie', color: 'from-orange-500/20 to-amber-600/10' },
+                { id: 3, name: 'Coupe VIP + Soin Visage', price: 5000, category: 'service', stock: 999, icon: 'fa-crown', color: 'from-yellow-500/20 to-amber-500/10' },
+                { id: 4, name: 'Rasage Traditionnel Barbe', price: 1500, category: 'service', stock: 999, icon: 'fa-feather', color: 'from-amber-600/25 to-yellow-600/10' },
+                { id: 5, name: 'Shampooing & Massage', price: 2000, category: 'service', stock: 999, icon: 'fa-pump-soap', color: 'from-orange-600/20 to-amber-600/10' },
+                { id: 6, name: 'Teinture Barbe & Cheveux', price: 4000, category: 'service', stock: 999, icon: 'fa-palette', color: 'from-yellow-600/20 to-orange-500/10' },
+                { id: 7, name: 'Pommade Coiffante Pro', price: 3000, category: 'product', stock: 14, icon: 'fa-jar', color: 'from-emerald-500/20 to-teal-600/10' },
+                { id: 8, name: 'Huile Barbe Bio 50ml', price: 4500, category: 'product', stock: 8, icon: 'fa-bottle-droplet', color: 'from-amber-500/20 to-orange-600/10' },
+                { id: 9, name: 'Spray Rafraîchissant', price: 2500, category: 'product', stock: 3, icon: 'fa-spray-can-sparkles', color: 'from-yellow-500/20 to-amber-500/10' }
+            ],
+            barbers: [
+                { id: 1, name: 'user', commissionRate: 40 },
+                { id: 2, name: 'user2', commissionRate: 40 }
+            ],
+            users: [
+                { id: 1, name: 'SEYNABOU', login: 'SEYNABOU', pass: 'Juillet2012', role: 'Super-Admin' },
+                { id: 2, name: 'user', login: 'user', pass: '1234567', role: 'Coiffeur / Caissier' }
+            ]
+        };
+
+        function loadLocalFallback() {
+            const saved = localStorage.getItem('sunubarber_saas_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    window.state.sales = parsed.sales || [];
+                    window.state.closedDays = parsed.closedDays || [];
+                    window.state.subscribers = parsed.subscribers || window.state.subscribers;
+                    window.state.expenses = parsed.expenses || window.state.expenses;
+                    window.state.catalog = parsed.catalog || window.state.catalog;
+                    window.state.barbers = parsed.barbers || window.state.barbers;
+                    window.state.users = parsed.users || window.state.users;
+                } catch(e) {
+                    console.error("Erreur lecture localStorage:", e);
+                }
+            }
+        }
+
+        async function initFirebaseSync() {
+            loadLocalFallback();
+            if (!auth || !db) return;
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                const docRef = doc(db, 'saas_database_store', appId);
+                onSnapshot(docRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const cloudData = docSnap.data();
+                        if (cloudData.catalog && cloudData.users) {
+                            window.state.sales = cloudData.sales || [];
+                            window.state.closedDays = cloudData.closedDays || [];
+                            window.state.subscribers = cloudData.subscribers || window.state.subscribers;
+                            window.state.expenses = cloudData.expenses || window.state.expenses;
+                            window.state.catalog = cloudData.catalog || window.state.catalog;
+                            window.state.barbers = cloudData.barbers || window.state.barbers;
+                            window.state.users = cloudData.users || window.state.users;
+                            
+                            if (window.state.currentUser) {
+                                renderCurrentView();
+                            }
+                        }
+                    } else {
+                        saveCloudState();
+                    }
+                }, (error) => {
+                    console.warn("Mode Cloud restreint, utilisation du stockage local sécurisé.");
+                });
+            } catch (e) {
+                console.warn("Mode hors-ligne / local actif.");
+            }
+        }
+
+        window.saveCloudState = async function() {
+            localStorage.setItem('sunubarber_saas_state', JSON.stringify({
+                sales: window.state.sales,
+                closedDays: window.state.closedDays,
+                subscribers: window.state.subscribers,
+                expenses: window.state.expenses,
+                catalog: window.state.catalog,
+                barbers: window.state.barbers,
+                users: window.state.users
+            }));
+
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'saas_database_store', appId);
+                await setDoc(docRef, {
+                    sales: window.state.sales,
+                    closedDays: window.state.closedDays,
+                    subscribers: window.state.subscribers,
+                    expenses: window.state.expenses,
+                    catalog: window.state.catalog,
+                    barbers: window.state.barbers,
+                    users: window.state.users,
+                    updatedAt: new Date().toISOString()
+                });
+            } catch (e) {
+                // Ignore cloud permission errors for offline resilience
+            }
+        };
+
+        window.onload = function() {
+            initFirebaseSync();
+        };
+    </script>
+
+    <!-- APP LOGIC SCRIPT -->
+    <script>
+        function fillLogin(user, pass) {
+            document.getElementById('loginUsername').value = user;
+            document.getElementById('loginPassword').value = pass;
+        }
+
+        function handleLocalLogin(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('loginUsername').value.trim();
+            const passwordInput = document.getElementById('loginPassword').value.trim();
+            const errorMsg = document.getElementById('loginErrorMessage');
+
+            const foundUser = window.state.users.find(u => u.login === usernameInput && u.pass === passwordInput);
+            if (foundUser) {
+                window.state.currentUser = foundUser;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+
+                document.getElementById('userName').innerText = foundUser.name;
+                document.getElementById('userRoleBadge').innerText = foundUser.role;
+                document.getElementById('userAvatar').innerText = foundUser.name.charAt(0).toUpperCase();
+
+                initApp();
+                showToast(`Bienvenue ${foundUser.name} !`, 'success');
+            } else {
+                if (errorMsg) errorMsg.classList.remove('hidden');
+                showToast('Identifiant ou mot de passe incorrect', 'error');
+            }
+        }
+
+        function handleLogout() {
+            window.state.currentUser = null;
+            document.getElementById('appContainer').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            showToast('Déconnexion réussie', 'info');
+        }
+
+        function switchTab(tabName) {
+            window.state.currentNav = tabName;
+            const tabs = ['caisse', 'catalogue', 'abonnements', 'depenses', 'produits_vendus', 'dashboard', 'comptes', 'sauvegarde'];
+            
+            tabs.forEach(t => {
+                const el = document.getElementById('tab-' + t);
+                const btn = document.getElementById('nav-btn-' + t);
+                if (el) {
+                    if (t === tabName) el.classList.remove('hidden');
+                    else el.classList.add('hidden');
+                }
+                if (btn) {
+                    if (t === tabName) {
+                        btn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-amber-500 text-stone-950 shadow';
+                    } else {
+                        btn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-stone-400 hover:text-stone-200';
+                    }
+                }
+            });
+            renderCurrentView();
+        }
+
+        function saveState() {
+            if (typeof window.saveCloudState === 'function') {
+                window.saveCloudState();
+            }
+        }
+
+        function initApp() {
+            renderBarberSelect();
+            renderPOSCatalog();
+            renderCart();
+            renderSalesHistory();
+            renderClosedDays();
+            renderAdminCatalog();
+            renderSubscribers();
+            renderExpenses();
+            renderSoldProductsDashboard();
+            renderDashboard();
+            renderUsers();
+        }
+
+        function renderCurrentView() {
+            if (window.state.currentNav === 'caisse') {
+                renderPOSCatalog();
+                renderCart();
+                renderSalesHistory();
+            } else if (window.state.currentNav === 'catalogue') {
+                renderAdminCatalog();
+            } else if (window.state.currentNav === 'abonnements') {
+                renderSubscribers();
+            } else if (window.state.currentNav === 'depenses') {
+                renderExpenses();
+            } else if (window.state.currentNav === 'produits_vendus') {
+                renderSoldProductsDashboard();
+            } else if (window.state.currentNav === 'dashboard') {
+                renderDashboard();
+            } else if (window.state.currentNav === 'comptes') {
+                renderUsers();
+            }
+        }
+
+        function renderBarberSelect() {
+            const sel = document.getElementById('cartBarber');
+            if (!sel) return;
+            sel.innerHTML = window.state.barbers.map(b => `<option value="${b.name}">${b.name} (Coiffeur)</option>`).join('');
+        }
+
+        function filterCategory(cat) {
+            window.state.currentCategoryFilter = cat;
+            ['all', 'service', 'product'].forEach(c => {
+                const btn = document.getElementById('cat-' + c);
+                if (c === cat) {
+                    btn.className = 'cat-btn flex-1 py-2 rounded-lg bg-amber-500 text-stone-950 font-bold transition shadow text-xs';
+                } else {
+                    btn.className = 'cat-btn flex-1 py-2 rounded-lg text-stone-400 hover:text-stone-200 transition text-xs';
+                }
+            });
+            renderPOSCatalog();
+        }
+
+        function renderPOSCatalog() {
+            const grid = document.getElementById('posItemsGrid');
+            if (!grid) return;
+
+            let items = window.state.catalog;
+            if (window.state.currentCategoryFilter !== 'all') {
+                items = items.filter(i => i.category === window.state.currentCategoryFilter);
+            }
+
+            grid.innerHTML = items.map(item => `
+                <button onclick="addToCart(${item.id})" class="glass-card p-4 rounded-2xl border border-amber-500/15 hover:border-amber-500/50 flex flex-col items-center justify-center text-center space-y-2 transition active:scale-95 group bg-gradient-to-br ${item.color || 'from-amber-500/10 to-orange-600/5'}">
+                    <div class="w-10 h-10 rounded-xl bg-stone-900 flex items-center justify-center text-amber-400 group-hover:scale-110 transition shadow border border-amber-500/20">
+                        <i class="fa-solid ${item.icon || 'fa-scissors'} text-base"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-xs text-stone-200 leading-tight">${item.name}</div>
+                        <div class="text-[11px] font-extrabold text-amber-400 mt-1">${item.price.toLocaleString()} FCFA</div>
+                        ${item.category === 'product' ? `<div class="text-[9px] text-stone-400 mt-0.5">Stock : ${item.stock}</div>` : ''}
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function addToCart(itemId) {
+            const catalogItem = window.state.catalog.find(i => i.id === itemId);
+            if (!catalogItem) return;
+
+            if (catalogItem.category === 'product' && catalogItem.stock <= 0) {
+                showToast('Stock épuisé pour ce produit ! Vente impossible.', 'error');
+                return;
+            }
+
+            const existing = window.state.cart.find(c => c.id === itemId);
+            if (existing) {
+                if (catalogItem.category === 'product' && existing.qty >= catalogItem.stock) {
+                    showToast('Stock insuffisant pour ajouter davantage de cet article.', 'error');
+                    return;
+                }
+                existing.qty += 1;
+            } else {
+                window.state.cart.push({ ...catalogItem, qty: 1 });
+            }
+            renderCart();
+        }
+
+        function removeFromCart(itemId) {
+            window.state.cart = window.state.cart.filter(c => c.id !== itemId);
+            renderCart();
+        }
+
+        function changeQty(itemId, delta) {
+            const item = window.state.cart.find(c => c.id === itemId);
+            if (item) {
+                if (delta > 0) {
+                    const catalogItem = window.state.catalog.find(i => i.id === itemId);
+                    if (catalogItem && catalogItem.category === 'product' && item.qty >= catalogItem.stock) {
+                        showToast('Stock maximum atteint pour ce produit.', 'error');
+                        return;
+                    }
+                }
+                item.qty += delta;
+                if (item.qty <= 0) {
+                    removeFromCart(itemId);
+                } else {
+                    renderCart();
+                }
+            }
+        }
+
+        function clearCart() {
+            window.state.cart = [];
+            renderCart();
+        }
+
+        function setPayMethod(method) {
+            window.state.selectedPaymentMethod = method;
+            ['Espèces', 'Wave', 'Orange Money', 'CB'].forEach(m => {
+                const btn = document.getElementById('pay-' + m);
+                if (btn) {
+                    if (m === method) {
+                        btn.className = 'pay-btn p-2.5 rounded-xl border border-amber-500 bg-amber-500/10 text-amber-400 flex items-center justify-center gap-2 transition active:scale-95 text-xs font-bold';
+                    } else {
+                        btn.className = 'pay-btn p-2.5 rounded-xl border border-stone-700/80 bg-stone-900 text-stone-300 hover:border-amber-500/50 flex items-center justify-center gap-2 transition active:scale-95 text-xs font-bold';
+                    }
+                }
+            });
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartItemsContainer');
+            const totalEl = document.getElementById('cartTotal');
+            if (!container || !totalEl) return;
+
+            if (window.state.cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-stone-500 text-xs space-y-2">
+                        <i class="fa-solid fa-basket-shopping text-2xl opacity-40"></i>
+                        <p>Votre panier est vide.<br>Cliquez sur les prestations ci-contre.</p>
+                    </div>
+                `;
+                totalEl.innerText = '0 FCFA';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = window.state.cart.map(item => {
+                const sub = item.price * item.qty;
+                total += sub;
+                return `
+                    <div class="flex items-center justify-between bg-stone-900 p-2.5 rounded-xl border border-stone-800 text-xs">
+                        <div class="flex-1 pr-2">
+                            <div class="font-bold text-stone-200">${item.name}</div>
+                            <div class="text-[10px] text-amber-400 font-semibold">${item.price.toLocaleString()} FCFA</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 rounded-lg bg-stone-800 text-stone-300 hover:bg-stone-700 flex items-center justify-center font-bold">-</button>
+                            <span class="font-bold text-stone-200 w-4 text-center">${item.qty}</span>
+                            <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 rounded-lg bg-stone-800 text-stone-300 hover:bg-stone-700 flex items-center justify-center font-bold">+</button>
+                            <button onclick="removeFromCart(${item.id})" class="text-rose-400 hover:text-rose-300 ml-2"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalEl.innerText = total.toLocaleString() + ' FCFA';
+        }
+
+        function checkoutCart() {
+            if (window.state.cart.length === 0) {
+                showToast('Le panier est vide.', 'error');
+                return;
+            }
+
+            for (let cartItem of window.state.cart) {
+                const catItem = window.state.catalog.find(i => i.id === cartItem.id);
+                if (catItem && catItem.category === 'product' && catItem.stock < cartItem.qty) {
+                    showToast(`Stock insuffisant pour ${catItem.name} (Stock actuel : ${catItem.stock})`, 'error');
+                    return;
+                }
+            }
+
+            const barber = document.getElementById('cartBarber').value;
+            let total = window.state.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const now = new Date();
+            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+            const newSale = {
+                id: Date.now(),
+                time: timeStr,
+                items: [...window.state.cart],
+                barber: barber,
+                paymentMethod: window.state.selectedPaymentMethod,
+                total: total
+            };
+
+            window.state.sales.unshift(newSale);
+
+            window.state.cart.forEach(cartItem => {
+                const catItem = window.state.catalog.find(i => i.id === cartItem.id);
+                if (catItem && catItem.category === 'product') {
+                    catItem.stock = Math.max(0, catItem.stock - cartItem.qty);
+                }
+            });
+
+            saveState();
+            window.state.cart = [];
+            renderCart();
+            renderSalesHistory();
+            renderAdminCatalog();
+            renderSoldProductsDashboard();
+            renderDashboard();
+
+            showToast('Encaissement validé avec succès (' + total.toLocaleString() + ' FCFA)', 'success');
+        }
+
+        function renderSalesHistory() {
+            const table = document.getElementById('salesHistoryTable');
+            const totalJourEl = document.getElementById('caisseTotalJour');
+            if (!table) return;
+
+            let totalJour = window.state.sales.reduce((sum, s) => sum + s.total, 0);
+            if (totalJourEl) totalJourEl.innerText = totalJour.toLocaleString() + ' FCFA';
+
+            if (window.state.sales.length === 0) {
+                table.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-stone-500">Aucune prestation encaissée aujourd'hui</td></tr>`;
+                return;
+            }
+
+            table.innerHTML = window.state.sales.map(sale => {
+                const summaryText = sale.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+                return `
+                    <tr class="hover:bg-stone-800/40">
+                        <td class="p-3 font-semibold text-stone-400">${sale.time}</td>
+                        <td class="p-3 font-bold text-stone-200">${summaryText}</td>
+                        <td class="p-3 text-stone-300"><span class="bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full font-semibold border border-amber-500/20">${sale.barber}</span></td>
+                        <td class="p-3 text-stone-300">${sale.paymentMethod}</td>
+                        <td class="p-3 text-right font-extrabold text-emerald-400">${sale.total.toLocaleString()} FCFA</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderAdminCatalog() {
+            const tbody = document.getElementById('adminCatalogTableBody');
+            if (!tbody) return;
+
+            if (window.state.catalog.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-stone-500">Aucun article dans le catalogue</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = window.state.catalog.map(item => `
+                <tr class="hover:bg-stone-800/40">
+                    <td class="p-3 font-bold text-stone-200 flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30"><i class="fa-solid ${item.icon || 'fa-scissors'}"></i></div>
+                        ${item.name}
+                    </td>
+                    <td class="p-3 text-stone-300"><span class="bg-stone-900 border border-stone-700/80 px-2.5 py-1 rounded-full font-semibold">${item.category === 'service' ? 'Prestation' : 'Produit'}</span></td>
+                    <td class="p-3 font-bold text-amber-400">${item.price.toLocaleString()} FCFA</td>
+                    <td class="p-3 font-extrabold text-stone-200">${item.category === 'service' ? 'Illimité' : item.stock + ' unités'}</td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="openEditCatalogModal(${item.id})" class="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold px-3 py-1.5 rounded-lg text-xs transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteCatalogItem(${item.id})" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold px-3 py-1.5 rounded-lg text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openEditCatalogModal(id) {
+            const item = window.state.catalog.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('editCatalogId').value = item.id;
+            document.getElementById('catItemName').value = item.name;
+            document.getElementById('catItemCategory').value = item.category;
+            document.getElementById('catItemPrice').value = item.price;
+            document.getElementById('catItemStock').value = item.stock;
+            document.getElementById('catalogModalTitle').innerText = 'Modifier Prestation / Produit';
+
+            openModal('catalogItemModal');
+        }
+
+        function handleSaveCatalogItem(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editCatalogId').value;
+            const name = document.getElementById('catItemName').value;
+            const category = document.getElementById('catItemCategory').value;
+            const price = parseInt(document.getElementById('catItemPrice').value);
+            const stock = parseInt(document.getElementById('catItemStock').value);
+
+            if (editId) {
+                const item = window.state.catalog.find(i => i.id == editId);
+                if (item) {
+                    item.name = name;
+                    item.category = category;
+                    item.price = price;
+                    item.stock = stock;
+                }
+                showToast('Article modifié avec succès', 'success');
+            } else {
+                const newItem = {
+                    id: Date.now(),
+                    name: name,
+                    category: category,
+                    price: price,
+                    stock: stock,
+                    icon: category === 'service' ? 'fa-scissors' : 'fa-jar',
+                    color: 'from-indigo-500/20 to-indigo-600/10'
+                };
+                window.state.catalog.push(newItem);
+                showToast('Nouvel article ajouté au catalogue', 'success');
+            }
+
+            saveState();
+            closeModal('catalogItemModal');
+            document.getElementById('editCatalogId').value = '';
+            e.target.reset();
+            renderAdminCatalog();
+            renderPOSCatalog();
+        }
+
+        function deleteCatalogItem(id) {
+            window.state.catalog = window.state.catalog.filter(i => i.id !== id);
+            saveState();
+            renderAdminCatalog();
+            renderPOSCatalog();
+            showToast('Article supprimé du catalogue', 'info');
+        }
+
+        function triggerCloseDay() {
+            let totalCA = window.state.sales.reduce((sum, s) => sum + s.total, 0);
+            let totalDep = window.state.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let netCoffre = totalCA - totalDep;
+
+            document.getElementById('modalCloseCA').innerText = totalCA.toLocaleString() + ' FCFA';
+            document.getElementById('modalCloseDep').innerText = totalDep.toLocaleString() + ' FCFA';
+            document.getElementById('modalCloseNet').innerText = netCoffre.toLocaleString() + ' FCFA';
+
+            openModal('closeDayModal');
+        }
+
+        function confirmCloseDay() {
+            let totalCA = window.state.sales.reduce((sum, s) => sum + s.total, 0);
+            let totalDep = window.state.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let netCoffre = totalCA - totalDep;
+            const now = new Date();
+            const dateStr = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth()+1).padStart(2, '0') + '/' + now.getFullYear();
+
+            const closedArchive = {
+                session: dateStr,
+                totalCA: totalCA,
+                expenses: totalDep,
+                net: netCoffre,
+                clientsCount: window.state.sales.length,
+                closedBy: window.state.currentUser ? window.state.currentUser.name : 'Administrateur'
+            };
+
+            window.state.closedDays.unshift(closedArchive);
+            window.state.sales = [];
+            saveState();
+
+            closeModal('closeDayModal');
+            renderSalesHistory();
+            renderClosedDays();
+            renderDashboard();
+
+            showToast('Journée clôturée et archivée avec succès !', 'success');
+        }
+
+        function renderClosedDays() {
+            const tbody = document.getElementById('closedDaysTableBody');
+            if (!tbody) return;
+
+            if (window.state.closedDays.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-stone-500">Aucune archive disponible</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = window.state.closedDays.map(arch => `
+                <tr class="hover:bg-stone-800/40">
+                    <td class="p-3 font-bold text-stone-200">${arch.session}</td>
+                    <td class="p-3 font-extrabold text-amber-400">${arch.totalCA.toLocaleString()} FCFA</td>
+                    <td class="p-3 text-rose-400 font-semibold">${arch.expenses.toLocaleString()} FCFA</td>
+                    <td class="p-3 text-emerald-400 font-extrabold">${arch.net.toLocaleString()} FCFA</td>
+                    <td class="p-3 text-stone-300">${arch.clientsCount} clients</td>
+                    <td class="p-3 text-right text-stone-400">${arch.closedBy}</td>
+                </tr>
+            `).join('');
+        }
+
+        function handleSaveSubscriber(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editSubId').value;
+            const name = document.getElementById('subName').value;
+            const phone = document.getElementById('subPhone').value;
+            const formula = document.getElementById('subFormula').value;
+            const count = parseInt(document.getElementById('subCount').value);
+
+            if (editId) {
+                const sub = window.state.subscribers.find(s => s.id == editId);
+                if (sub) {
+                    sub.name = name;
+                    sub.phone = phone;
+                    sub.formula = formula;
+                    sub.count = count;
+                }
+                showToast('Abonné modifié avec succès', 'success');
+            } else {
+                const newSub = {
+                    id: Date.now(),
+                    name: name,
+                    phone: phone,
+                    formula: formula,
+                    count: count,
+                    expiry: '30 jours'
+                };
+                window.state.subscribers.unshift(newSub);
+                showToast('Client abonné enregistré', 'success');
+            }
+
+            saveState();
+            closeModal('subscriberModal');
+            document.getElementById('editSubId').value = '';
+            e.target.reset();
+            renderSubscribers();
+        }
+
+        function openEditSubscriberModal(id) {
+            const sub = window.state.subscribers.find(s => s.id === id);
+            if (!sub) return;
+            document.getElementById('editSubId').value = sub.id;
+            document.getElementById('subName').value = sub.name;
+            document.getElementById('subPhone').value = sub.phone;
+            document.getElementById('subFormula').value = sub.formula;
+            document.getElementById('subCount').value = sub.count;
+            document.getElementById('subModalTitle').innerText = 'Modifier Abonné VIP';
+            openModal('subscriberModal');
+        }
+
+        function deleteSubscriber(id) {
+            window.state.subscribers = window.state.subscribers.filter(s => s.id !== id);
+            saveState();
+            renderSubscribers();
+            showToast('Abonné supprimé', 'info');
+        }
+
+        function renderSubscribers() {
+            const tbody = document.getElementById('subscribersTableBody');
+            if (!tbody) return;
+
+            if (window.state.subscribers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-stone-500">Aucun abonné enregistré</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = window.state.subscribers.map(sub => `
+                <tr class="hover:bg-stone-800/40">
+                    <td class="p-3 font-bold text-stone-200 flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-[10px] border border-amber-500/30">${sub.name.charAt(0)}</div>
+                        ${sub.name}
+                    </td>
+                    <td class="p-3 text-stone-300">${sub.phone}</td>
+                    <td class="p-3 text-amber-400 font-semibold">${sub.formula}</td>
+                    <td class="p-3 font-extrabold text-emerald-400">${sub.count} coupes</td>
+                    <td class="p-3 text-stone-400">${sub.expiry}</td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="openEditSubscriberModal(${sub.id})" class="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold px-3 py-1.5 rounded-lg text-xs transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteSubscriber(${sub.id})" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold px-3 py-1.5 rounded-lg text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function handleSaveExpense(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editExpId').value;
+            const motif = document.getElementById('expMotif').value;
+            const cat = document.getElementById('expCat').value;
+            const amount = parseInt(document.getElementById('expAmount').value);
+
+            if (editId) {
+                const exp = window.state.expenses.find(ex => ex.id == editId);
+                if (exp) {
+                    exp.motif = motif;
+                    exp.category = cat;
+                    exp.amount = amount;
+                }
+                showToast('Dépense modifiée avec succès', 'success');
+            } else {
+                const now = new Date();
+                const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+                const newExp = {
+                    id: Date.now(),
+                    time: timeStr,
+                    motif: motif,
+                    category: cat,
+                    amount: amount
+                };
+                window.state.expenses.unshift(newExp);
+                showToast('Dépense enregistrée', 'success');
+            }
+
+            saveState();
+            closeModal('expenseModal');
+            document.getElementById('editExpId').value = '';
+            e.target.reset();
+            renderExpenses();
+            renderDashboard();
+        }
+
+        function openEditExpenseModal(id) {
+            const exp = window.state.expenses.find(ex => ex.id === id);
+            if (!exp) return;
+            document.getElementById('editExpId').value = exp.id;
+            document.getElementById('expMotif').value = exp.motif;
+            document.getElementById('expCat').value = exp.category;
+            document.getElementById('expAmount').value = exp.amount;
+            document.getElementById('expModalTitle').innerText = 'Modifier Dépense / Sortie';
+            openModal('expenseModal');
+        }
+
+        function deleteExpense(id) {
+            window.state.expenses = window.state.expenses.filter(ex => ex.id !== id);
+            saveState();
+            renderExpenses();
+            renderDashboard();
+            showToast('Dépense supprimée', 'info');
+        }
+
+        function renderExpenses() {
+            const tbody = document.getElementById('expensesTableBody');
+            if (!tbody) return;
+
+            if (window.state.expenses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-stone-500">Aucune dépense enregistrée aujourd'hui</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = window.state.expenses.map(exp => `
+                <tr class="hover:bg-stone-800/40">
+                    <td class="p-3 text-stone-400 font-semibold">${exp.time}</td>
+                    <td class="p-3 font-bold text-stone-200">${exp.motif}</td>
+                    <td class="p-3"><span class="bg-stone-900 border border-stone-700/80 px-2.5 py-1 rounded-full text-stone-300 font-semibold">${exp.category}</span></td>
+                    <td class="p-3 font-extrabold text-rose-400">${exp.amount.toLocaleString()} FCFA</td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="openEditExpenseModal(${exp.id})" class="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold px-3 py-1.5 rounded-lg text-xs transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteExpense(${exp.id})" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold px-3 py-1.5 rounded-lg text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSoldProductsDashboard() {
+            const topTable = document.getElementById('topProductsTableBody');
+            const historyBody = document.getElementById('soldProductsHistoryBody');
+            const totalCountEl = document.getElementById('totalProductsSoldCount');
+            if (!topTable || !historyBody) return;
+
+            let productStats = {};
+            let soldHistoryItems = [];
+            let totalUnitsSold = 0;
+            let allSales = [...window.state.sales];
+
+            allSales.forEach(sale => {
+                sale.items.forEach(item => {
+                    if (item.category === 'product') {
+                        totalUnitsSold += item.qty;
+                        soldHistoryItems.push({
+                            time: sale.time,
+                            name: item.name,
+                            qty: item.qty,
+                            total: item.price * item.qty
+                        });
+
+                        if (!productStats[item.name]) {
+                            productStats[item.name] = { qty: 0, revenue: 0 };
+                        }
+                        productStats[item.name].qty += item.qty;
+                        productStats[item.name].revenue += (item.price * item.qty);
+                    }
+                });
+            });
+
+            if (totalCountEl) totalCountEl.innerText = totalUnitsSold + ' unités';
+
+            if (soldHistoryItems.length === 0) {
+                historyBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-stone-500">Aucun produit vendu pour l'instant</td></tr>`;
+            } else {
+                historyBody.innerHTML = soldHistoryItems.map(h => `
+                    <tr class="hover:bg-stone-800/40">
+                        <td class="p-3 text-stone-400 font-semibold">${h.time}</td>
+                        <td class="p-3 font-bold text-stone-200">${h.name}</td>
+                        <td class="p-3 text-center font-bold text-amber-400">${h.qty}</td>
+                        <td class="p-3 text-right font-extrabold text-emerald-400">${h.total.toLocaleString()} FCFA</td>
+                    </tr>
+                `).join('');
+            }
+
+            let sortedProducts = Object.keys(productStats).map(name => ({
+                name: name,
+                qty: productStats[name].qty,
+                revenue: productStats[name].revenue
+            })).sort((a, b) => b.qty - a.qty);
+
+            if (sortedProducts.length === 0) {
+                topTable.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-stone-500">Aucun classement disponible</td></tr>`;
+            } else {
+                topTable.innerHTML = sortedProducts.map((p, index) => {
+                    let rankBadge = `w-6 h-6 rounded-full flex items-center justify-center font-black text-xs `;
+                    if (index === 0) rankBadge += `bg-amber-500 text-stone-950`;
+                    else if (index === 1) rankBadge += `bg-stone-300 text-stone-950`;
+                    else if (index === 2) rankBadge += `bg-amber-700 text-white`;
+                    else rankBadge += `bg-stone-900 border border-stone-700/80 text-stone-400`;
+
+                    return `
+                        <tr class="hover:bg-stone-800/40">
+                            <td class="p-3 flex items-center gap-2.5">
+                                <div class="${rankBadge}">${index + 1}</div>
+                                <span class="font-bold text-stone-200">${p.name}</span>
+                            </td>
+                            <td class="p-3 text-center font-extrabold text-amber-400">${p.qty} u.</td>
+                            <td class="p-3 text-right font-bold text-emerald-400">${p.revenue.toLocaleString()} FCFA</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function updateBarberName(idx, newName) {
+            if (!newName.trim()) return;
+            const oldName = window.state.barbers[idx].name;
+            window.state.barbers[idx].name = newName.trim();
+            window.state.sales.forEach(s => {
+                if (s.barber === oldName) s.barber = newName.trim();
+            });
+            saveState();
+            renderBarberSelect();
+            showToast('Nom du coiffeur mis à jour', 'success');
+        }
+
+        function updateBarberCommission(idx, rate) {
+            window.state.barbers[idx].commissionRate = parseFloat(rate) || 0;
+            saveState();
+            renderDashboard();
+            showToast('Taux de commission mis à jour', 'success');
+        }
+
+        function renderDashboard() {
+            let totalCA = window.state.sales.reduce((sum, s) => sum + s.total, 0);
+            window.state.closedDays.forEach(arch => totalCA += arch.totalCA);
+
+            let totalDep = window.state.expenses.reduce((sum, e) => sum + e.amount, 0);
+            window.state.closedDays.forEach(arch => totalDep += arch.expenses);
+
+            let netBenefice = totalCA - totalDep;
+            let totalClients = window.state.sales.length;
+            window.state.closedDays.forEach(arch => totalClients += arch.clientsCount);
+
+            document.getElementById('dashRecetteMois').innerText = totalCA.toLocaleString() + ' FCFA';
+            document.getElementById('dashDepensesMois').innerText = totalDep.toLocaleString() + ' FCFA';
+            document.getElementById('dashNetMois').innerText = netBenefice.toLocaleString() + ' FCFA';
+            document.getElementById('dashClientsCount').innerText = totalClients;
+
+            const barberStatsTable = document.getElementById('barberStatsTableBody');
+            if (!barberStatsTable) return;
+
+            let allSalesCombined = [...window.state.sales];
+
+            barberStatsTable.innerHTML = window.state.barbers.map((barber, idx) => {
+                let barberSales = allSalesCombined.filter(s => s.barber === barber.name);
+                let count = barberSales.length;
+                let revenue = barberSales.reduce((sum, s) => sum + s.total, 0);
+                let commission = revenue * (barber.commissionRate / 100);
+
+                return `
+                    <tr class="hover:bg-stone-800/40">
+                        <td class="p-3">
+                            <input type="text" value="${barber.name}" onchange="updateBarberName(${idx}, this.value)" class="bg-stone-900 border border-stone-700/80 rounded-lg px-2.5 py-1.5 text-xs text-stone-100 font-bold w-36 focus:outline-none focus:border-amber-500">
+                        </td>
+                        <td class="p-3 text-stone-300">${count} prestations</td>
+                        <td class="p-3 font-semibold text-amber-400">${revenue.toLocaleString()} FCFA</td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1">
+                                <input type="number" value="${barber.commissionRate}" onchange="updateBarberCommission(${idx}, this.value)" min="0" max="100" class="bg-stone-900 border border-stone-700/80 rounded-lg px-2 py-1 text-xs text-stone-100 font-bold w-16 text-center focus:outline-none focus:border-amber-500">
+                                <span class="text-stone-400">%</span>
+                            </div>
+                        </td>
+                        <td class="p-3 text-right font-extrabold text-emerald-400">${commission.toLocaleString()} FCFA</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function handleAddUser(e) {
+            e.preventDefault();
+            const newUser = {
+                id: Date.now(),
+                name: document.getElementById('newUserNameInput').value,
+                login: document.getElementById('newUserLogin').value,
+                pass: document.getElementById('newUserPass').value,
+                role: document.getElementById('newUserRole').value
+            };
+
+            window.state.users.push(newUser);
+            if (!window.state.barbers.some(b => b.name === newUser.name)) {
+                window.state.barbers.push({ id: Date.now(), name: newUser.name, commissionRate: 40 });
+            }
+
+            saveState();
+            closeModal('userModal');
+            renderUsers();
+            renderBarberSelect();
+            showToast('Compte employé créé avec succès', 'success');
+            e.target.reset();
+        }
+
+        function openEditUserModal(id) {
+            const user = window.state.users.find(u => u.id === id);
+            if (!user) return;
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editUserNameInput').value = user.name;
+            document.getElementById('editUserLogin').value = user.login;
+            document.getElementById('editUserPass').value = user.pass;
+            document.getElementById('editUserRole').value = user.role;
+            openModal('editUserModal');
+        }
+
+        function handleUpdateUser(e) {
+            e.preventDefault();
+            const userId = parseInt(document.getElementById('editUserId').value);
+            const user = window.state.users.find(u => u.id === userId);
+            if (!user) return;
+
+            user.name = document.getElementById('editUserNameInput').value;
+            user.login = document.getElementById('editUserLogin').value;
+            user.pass = document.getElementById('editUserPass').value;
+            user.role = document.getElementById('editUserRole').value;
+
+            saveState();
+            closeModal('editUserModal');
+            renderUsers();
+            renderBarberSelect();
+            showToast('Utilisateur mis à jour avec succès', 'success');
+        }
+
+        function deleteUser(id) {
+            if (window.state.users.length <= 1) {
+                showToast('Impossible de supprimer le dernier utilisateur', 'error');
+                return;
+            }
+            window.state.users = window.state.users.filter(u => u.id !== id);
+            saveState();
+            renderUsers();
+            showToast('Utilisateur supprimé', 'info');
+        }
+
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = window.state.users.map(u => `
+                <tr class="hover:bg-stone-800/40">
+                    <td class="p-3 font-bold text-stone-200 flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-[10px] border border-amber-500/30">${u.name.charAt(0)}</div>
+                        ${u.name}
+                    </td>
+                    <td class="p-3 text-stone-300 font-mono">${u.login}</td>
+                    <td class="p-3 font-mono text-amber-400 font-bold">${u.pass}</td>
+                    <td class="p-3"><span class="bg-amber-500/10 text-amber-400 px-2.5 py-0.5 rounded-full font-bold text-[10px] border border-amber-500/20">${u.role}</span></td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="openEditUserModal(${u.id})" class="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold px-3 py-1.5 rounded-lg text-xs transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteUser(${u.id})" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold px-3 py-1.5 rounded-lg text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function exportSaasData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.state, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `sunubarber_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('Sauvegarde exportée avec succès', 'success');
+        }
+
+        function importSaasData(event) {
+            const fileReader = new FileReader();
+            if (event.target.files[0]) {
+                fileReader.readAsText(event.target.files[0], "UTF-8");
+                fileReader.onload = function(e) {
+                    try {
+                        const parsed = JSON.parse(e.target.result);
+                        window.state.sales = parsed.sales || [];
+                        window.state.closedDays = parsed.closedDays || [];
+                        window.state.subscribers = parsed.subscribers || window.state.subscribers;
+                        window.state.expenses = parsed.expenses || window.state.expenses;
+                        window.state.catalog = parsed.catalog || window.state.catalog;
+                        window.state.barbers = parsed.barbers || window.state.barbers;
+                        window.state.users = parsed.users || window.state.users;
+
+                        saveState();
+                        initApp();
+                        showToast('Données restaurées avec succès !', 'success');
+                    } catch(err) {
+                        showToast('Fichier de sauvegarde invalide', 'error');
+                    }
+                }
+            }
+        }
+
+        function openModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.add('hidden');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            const text = document.getElementById('toastText');
+            const icon = document.getElementById('toastIcon');
+
+            text.innerText = message;
+            if (type === 'success') {
+                icon.className = 'fa-solid fa-circle-check text-amber-400 text-base';
+            } else if (type === 'error') {
+                icon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-base';
+            } else {
+                icon.className = 'fa-solid fa-circle-info text-cyan-400 text-base';
+            }
+
+            toast.classList.remove('translate-y-[-200%]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-200%]', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
